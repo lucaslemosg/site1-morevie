@@ -64,7 +64,7 @@ export function LandingPage() {
 
       heroTl
         .to('.hero-letter', {
-          clipPath: 'inset(0% 0% 0% 0%)',
+          clipPath: 'inset(-20% 0% 0% 0%)',
           y: 0,
           opacity: 1,
           stagger: 0.2,
@@ -76,17 +76,24 @@ export function LandingPage() {
         .to('.l-hero__actions',  { opacity: 1, y: 0, duration: 0.4 }, '-=0.15')
         .to('.l-hero__scroll',   { opacity: 1, duration: 0.3 });
 
-      /* Parallax on experience section background */
-      gsap.to('.l-experiencia__bg', {
-        y: -80,
-        ease: 'none',
+      /* Experiência: efeito de janela — 3 imagens reveladas de baixo para cima */
+      gsap.set('.exp-slide-2', { clipPath: 'inset(100% 0% 0% 0%)' });
+      gsap.set('.exp-slide-3', { clipPath: 'inset(100% 0% 0% 0%)' });
+
+      const expTl = gsap.timeline({
         scrollTrigger: {
           trigger: '.l-experiencia',
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: true,
+          start: 'top top',
+          end: '+=200%',
+          pin: true,
+          scrub: 1,
+          anticipatePin: 1,
         },
       });
+
+      expTl
+        .to('.exp-slide-2', { clipPath: 'inset(0% 0% 0% 0%)', duration: 1, ease: 'power2.inOut' }, 0)
+        .to('.exp-slide-3', { clipPath: 'inset(0% 0% 0% 0%)', duration: 1, ease: 'power2.inOut' }, 1);
 
       /* Scroll reveals */
       gsap.utils.toArray<HTMLElement>('.rv-up').forEach((el) => {
@@ -164,11 +171,20 @@ export function LandingPage() {
       {/* ── Navigation ──────────────────────────────────────── */}
       <nav className={`l-nav ${navScrolled ? 'is-scrolled' : ''}`}>
         <a href="#hero" className="l-nav__logo">
-          MOR<em>Ê</em>
+          <img src="/logo.png" alt="Morê Nature Spa" className="l-nav__logo-img" />
         </a>
-        <a href="#contato" className="l-nav__cta">
-          Solicitar Apresentação
-        </a>
+        <div className="l-nav__actions">
+          <a href="#contato" className="l-nav__cta">
+            Solicitar Apresentação
+          </a>
+          <a href="https://www.instagram.com/morenatureSpa" target="_blank" rel="noopener noreferrer" className="l-nav__instagram" aria-label="Instagram">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" />
+              <circle cx="12" cy="12" r="5" />
+              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+            </svg>
+          </a>
+        </div>
       </nav>
 
       {/* ── Hero ────────────────────────────────────────────── */}
@@ -187,11 +203,11 @@ export function LandingPage() {
             <span className="hero-letter hero-e">Ê</span>
           </div>
           <p className="l-hero__subtitle">
-            Um novo padrão de viver, investir<br />e desacelerar.
+            Um novo padrão de viver, investir e desacelerar.
           </p>
           <div className="l-hero__actions">
-            <a href="#contato" className="btn-gold">Solicitar Apresentação Privada</a>
-            <a href="#conceito" className="btn-ghost">Descobrir o Projeto</a>
+            <a href="#contato" className="btn-gold hide-on-mobile">Solicitar Apresentação</a>
+            <a href="#conceito" className="btn-outline">Conhecer o Projeto</a>
           </div>
         </div>
 
@@ -218,23 +234,33 @@ export function LandingPage() {
           </p>
         </div>
         <div className="l-conceito__img rv-right">
-          {/* SUBSTITUA: arquitetura integrada à natureza */}
-          <ImagePlaceholder label="Conceito — Arquitetura integrada à natureza" />
+          <div className="video-wrap">
+            <video
+              className="conceito-video"
+              src="/take08.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              ref={(el) => { if (el) el.playbackRate = 1; }}
+            />
+          </div>
         </div>
       </section>
 
       {/* ── Experiência ─────────────────────────────────────── */}
       <section className="l-experiencia">
         <div className="l-experiencia__bg">
-          {/* SUBSTITUA: área de lazer / resort */}
-          <ImagePlaceholder label="Experiência — Área de lazer / Piscina resort" />
+          <img className="exp-slide exp-slide-1" src="/fundo.png"  alt="" />
+          <img className="exp-slide exp-slide-2" src="/img2.png"   alt="" />
+          <img className="exp-slide exp-slide-3" src="/img3.png"   alt="" />
         </div>
         <div className="l-experiencia__overlay" />
         <div className="l-experiencia__content">
-          <span className="s-label rv-up">02 · Experiência</span>
+          <span className="s-label rv-up" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.8)' }}>02 · Experiência</span>
           <h2
-            className="s-title rv-up"
-            style={{ maxWidth: 680, margin: '0 auto 1rem', textAlign: 'center' }}
+            className="s-title rv-up experiencia-title"
+            style={{ maxWidth: 780, margin: '0 auto 1rem', textAlign: 'center' }}
           >
             Cada detalhe desenhado para <em>equilíbrio</em> perfeito.
           </h2>
@@ -258,48 +284,11 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ── Wellness ────────────────────────────────────────── */}
-      <section className="l-wellness">
-        <div className="l-wellness__inner">
-          <span className="s-label rv-up">03 · Wellness & Longevidade</span>
-          <blockquote className="l-wellness__quote rv-up">
-            "Mais do que um destino,<br />um ecossistema de bem-estar."
-          </blockquote>
-          <p className="s-text rv-up" style={{ maxWidth: 580, margin: '0 auto' }}>
-            Spa, natureza, desaceleração e conexão. Um lugar para viver melhor
-            ou simplesmente pausar.
-          </p>
-
-          <div className="l-wellness__grid">
-            <div className="w-card rv-up">
-              <span className="w-card__icon">◆</span>
-              <h3>Spa & Tratamentos</h3>
-              <p>
-                Protocolos exclusivos desenvolvidos para longevidade e recuperação profunda.
-              </p>
-            </div>
-            <div className="w-card rv-up">
-              <span className="w-card__icon">◇</span>
-              <h3>Natureza & Trilhas</h3>
-              <p>
-                Imersão completa em bioma preservado. O silêncio como experiência de luxo.
-              </p>
-            </div>
-            <div className="w-card rv-up">
-              <span className="w-card__icon">○</span>
-              <h3>Gastronomia Funcional</h3>
-              <p>
-                Culinária desenvolvida com foco em nutrição, prazer e bem-estar integral.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ── Investimento ────────────────────────────────────── */}
       <section className="l-investimento" id="investimento">
         <div className="rv-left">
-          <span className="s-label">04 · Investimento</span>
+          <span className="s-label">03 · Investimento</span>
           <h2 className="s-title">
             Um modelo <em>inteligente</em> que une uso e rentabilidade.
           </h2>
@@ -319,53 +308,20 @@ export function LandingPage() {
           </ul>
         </div>
         <div className="l-investimento__img rv-right">
-          {/* SUBSTITUA: interior da Wellness Suite */}
-          <ImagePlaceholder label="Investimento — Interior da Wellness Suite" />
+          <div className="video-wrap">
+            <video
+              className="conceito-video"
+              src="/take09.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              ref={(el) => { if (el) el.playbackRate = 1; }}
+            />
+          </div>
         </div>
       </section>
 
-      {/* ── Tipologias ──────────────────────────────────────── */}
-      <section className="l-tipologias" id="tipologias">
-        <div className="l-tipologias__header">
-          <span className="s-label rv-up">05 · Tipologias</span>
-          <h2 className="s-title rv-up">
-            Wellness Suites<br />& <em>Residences</em>
-          </h2>
-          <p className="s-text rv-up" style={{ margin: '0 auto', textAlign: 'center', maxWidth: 500 }}>
-            Ambientes pensados para eficiência, conforto e integração com o entorno.
-          </p>
-        </div>
-        <div className="l-tipologias__grid">
-          <div className="tipo-card rv-up">
-            <div className="tipo-card__img">
-              {/* SUBSTITUA: Wellness Suite interior */}
-              <ImagePlaceholder label="Wellness Suite — Interior / Vista" />
-            </div>
-            <div className="tipo-card__body">
-              <span className="tipo-card__tag">Tipo 01</span>
-              <h3 className="tipo-card__title">Wellness Suite</h3>
-              <p className="tipo-card__desc">
-                Unidade compacta de alto desempenho. Ideal para investidores que buscam
-                máxima rentabilidade e uso pontual com toda a infraestrutura do resort.
-              </p>
-            </div>
-          </div>
-          <div className="tipo-card rv-up">
-            <div className="tipo-card__img">
-              {/* SUBSTITUA: Residence exterior/jardim */}
-              <ImagePlaceholder label="Residence — Vista externa / Jardim privativo" />
-            </div>
-            <div className="tipo-card__body">
-              <span className="tipo-card__tag">Tipo 02</span>
-              <h3 className="tipo-card__title">Residence</h3>
-              <p className="tipo-card__desc">
-                Residência completa com maior espaço privativo. Para quem quer viver
-                a experiência Morê com amplitude e exclusividade máximas.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ── Exclusividade ───────────────────────────────────── */}
       <section className="l-exclusividade">
@@ -374,14 +330,14 @@ export function LandingPage() {
           <ImagePlaceholder label="Exclusividade — Vista aérea / Implantação do projeto" />
         </div>
         <div className="rv-right">
-          <span className="s-label">06 — Exclusividade</span>
+          <span className="s-label">04 · Exclusividade</span>
           <h2 className="s-title">
             Um convite <em>para poucos.</em>
           </h2>
           <div className="s-divider" />
           <p className="s-text">
             Projeto de baixa densidade, acesso limitado. O número reduzido de unidades
-            não é apenas um diferencial — é o que garante a experiência e valorização
+            não é apenas um diferencial: é o que garante a experiência e valorização
             que prometemos.
           </p>
           <div className="excl-stats">
@@ -418,13 +374,13 @@ export function LandingPage() {
           </blockquote>
           <p className="s-text">
             Nossa equipe entrará em contato para uma conversa personalizada.
-            Sem pressão — apenas a apresentação que você merece.
+            Sem pressão. Apenas a apresentação que você merece.
           </p>
         </div>
 
         <div className="rv-right">
           <div className="l-form">
-            <h3 className="l-form__title">Pré-Qualificação</h3>
+            <h3 className="l-form__title">Garanta o seu Morê</h3>
             <p className="l-form__sub">Preencha para receber a apresentação exclusiva</p>
 
             {formState === 'sent' ? (
@@ -510,7 +466,7 @@ export function LandingPage() {
       {/* ── Footer ──────────────────────────────────────────── */}
       <footer className="l-footer">
         <div className="l-footer__logo">
-          MOR<em>Ê</em> NATURE SPA
+          <img src="/logo.png" alt="Morê Nature Spa" className="l-footer__logo-img" />
         </div>
         <p className="l-footer__copy">© 2025 Morê Nature Spa. Todos os direitos reservados.</p>
       </footer>

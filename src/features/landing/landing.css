@@ -1,14 +1,20 @@
 /* ─── Design Tokens ──────────────────────────────────────────── */
 :root {
-  --bg-dark: #0b150e;
-  --bg-medium: #111a13;
-  --bg-section: #161f18;
+  --bg-dark: #0d0e16;
+  --bg-medium: #11131d;
+  --bg-section: #161821;
   --gold: #c4a05a;
   --gold-light: #d4b878;
-  --cream: #f2ede4;
-  --cream-dim: #c8c2b8;
-  --sage: #7a9070;
-  --muted: #4a5e4a;
+  --cream: #f3efe8;
+  --cream-dim: #ccc6bc;
+  --sage: #8aafc8;
+  --muted: #566880;
+}
+
+@media (max-width: 768px) {
+  .hide-on-mobile { display: none !important; }
+  .l-nav__cta { display: none !important; }
+  .l-nav__instagram { opacity: 1; color: var(--gold); }
 }
 
 /* ─── Base ───────────────────────────────────────────────────── */
@@ -33,7 +39,7 @@
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 1.8rem 5vw;
+  padding: 0.6rem 5vw;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -42,10 +48,10 @@
 }
 
 .l-nav.is-scrolled {
-  background: rgba(11, 21, 14, 0.96);
+  background: rgba(13, 14, 22, 0.96);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  padding: 1.1rem 5vw;
+  padding: 0.4rem 5vw;
   border-bottom-color: rgba(196, 160, 90, 0.15);
 }
 
@@ -59,30 +65,57 @@
   cursor: pointer;
 }
 
-.l-nav__logo em {
-  font-style: normal;
+.l-nav__logo-img {
+  height: 96px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.l-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.l-nav__instagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--gold);
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  padding: 0.25rem;
+}
+
+.l-nav__instagram:hover {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .l-nav__cta {
-  background: transparent;
-  border: 1px solid var(--gold);
-  color: var(--gold);
-  padding: 0.6rem 1.6rem;
+  background: var(--gold);
+  border: none;
+  color: var(--bg-dark);
+  padding: 0.75rem 1.8rem;
   font-family: 'Montserrat', sans-serif;
   font-size: 0.65rem;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.3s ease, color 0.3s ease;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
   text-decoration: none;
   display: inline-block;
+  box-shadow: 0 2px 16px rgba(196, 160, 90, 0.35);
 }
 
 .l-nav__cta:hover {
-  background: var(--gold);
-  color: var(--bg-dark);
+  background: var(--gold-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 24px rgba(196, 160, 90, 0.5);
 }
 
 /* ─── Hero Background Image ──────────────────────────────────── */
@@ -99,7 +132,7 @@
 .img-ph {
   width: 100%;
   height: 100%;
-  background: linear-gradient(145deg, #182b1c 0%, #0e1e11 100%);
+  background: linear-gradient(145deg, #1a1d2e 0%, #0d0f1a 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -120,7 +153,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 30% 30%, rgba(122, 144, 112, 0.08) 0%, transparent 70%);
+  background: radial-gradient(ellipse at 30% 30%, rgba(100, 140, 180, 0.08) 0%, transparent 70%);
 }
 
 .img-ph svg {
@@ -169,10 +202,10 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(11, 21, 14, 0.15) 0%,
-    rgba(11, 21, 14, 0.05) 35%,
-    rgba(11, 21, 14, 0.75) 75%,
-    rgba(11, 21, 14, 1) 100%
+    rgba(13, 14, 22, 0.15) 0%,
+    rgba(13, 14, 22, 0.05) 35%,
+    rgba(13, 14, 22, 0.75) 75%,
+    rgba(13, 14, 22, 1) 100%
   );
   z-index: 1;
 }
@@ -182,14 +215,28 @@
   z-index: 2;
 }
 
+
 .l-hero__tagline {
-  font-size: 0.65rem;
-  letter-spacing: 0.35em;
+  font-size: 0.7rem;
+  letter-spacing: 0.5em;
   text-transform: uppercase;
   color: var(--gold);
-  margin-bottom: 1.2rem;
-  display: block;
+  margin-bottom: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
   will-change: transform, opacity;
+}
+
+.l-hero__tagline::before,
+.l-hero__tagline::after {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.7;
+  flex-shrink: 0;
 }
 
 .l-hero__title {
@@ -200,7 +247,7 @@
   letter-spacing: -0.02em;
   display: flex;
   align-items: flex-end;
-  overflow: hidden;
+  padding-top: 0.15em;
   margin-bottom: 1.2rem;
 }
 
@@ -284,6 +331,28 @@
   transform: translateY(-2px);
 }
 
+.btn-outline {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  padding: 1rem 2.5rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.25s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-outline:hover {
+  background: var(--gold);
+  color: var(--bg-dark);
+  transform: translateY(-2px);
+}
+
 .btn-ghost {
   background: transparent;
   color: var(--cream);
@@ -361,6 +430,52 @@
   position: relative;
 }
 
+/* ─── Vídeo Conceito ─────────────────────────────────────────── */
+.video-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* 4 cantoneiras douradas com gradientes */
+.video-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -14px;
+  background:
+    linear-gradient(var(--gold), var(--gold)) top    left  / 44px 1px  no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top    left  / 1px  44px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top    right / 44px 1px  no-repeat,
+    linear-gradient(var(--gold), var(--gold)) top    right / 1px  44px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom left  / 44px 1px  no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom left  / 1px  44px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom right / 44px 1px  no-repeat,
+    linear-gradient(var(--gold), var(--gold)) bottom right / 1px  44px no-repeat;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Borda interna sutil + linha de scan decorativa */
+.video-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(196, 160, 90, 0.18);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.conceito-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(196, 160, 90, 0.08);
+}
+
 .l-conceito__img::after {
   content: '';
   position: absolute;
@@ -375,7 +490,7 @@
 /* ─── Experiência ────────────────────────────────────────────── */
 .l-experiencia {
   position: relative;
-  height: 85vh;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -386,17 +501,30 @@
 .l-experiencia__bg {
   position: absolute;
   inset: 0;
-  will-change: transform;
 }
 
-.l-experiencia__bg .img-ph {
-  border: none;
+.exp-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  will-change: clip-path;
+}
+
+.exp-slide-2,
+.exp-slide-3 {
+  clip-path: inset(100% 0% 0% 0%);
 }
 
 .l-experiencia__overlay {
   position: absolute;
   inset: 0;
-  background: rgba(11, 21, 14, 0.65);
+  background:
+    linear-gradient(to bottom, rgba(13, 14, 22, 1) 0%, rgba(13, 14, 22, 0) 22%, rgba(13, 14, 22, 0) 78%, rgba(13, 14, 22, 1) 100%),
+    rgba(13, 14, 22, 0.72);
 }
 
 .l-experiencia__content {
@@ -404,6 +532,24 @@
   z-index: 1;
   padding: 4rem 5vw;
   width: 100%;
+}
+
+.experiencia-title {
+  font-size: clamp(3rem, 6vw, 6rem) !important;
+  text-shadow: 0 4px 32px rgba(0, 0, 0, 0.7);
+}
+
+.l-experiencia__content .s-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.45em;
+}
+
+.l-experiencia__content .feat-item h4 {
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.8);
+}
+
+.l-experiencia__content .feat-item p {
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
 }
 
 .l-experiencia__features {
@@ -598,7 +744,7 @@
 
 .tipo-card__body {
   padding: 2rem 2rem 1.5rem;
-  background: linear-gradient(to top, rgba(11, 21, 14, 0.98) 0%, rgba(11, 21, 14, 0.85) 100%);
+  background: linear-gradient(to top, rgba(13, 14, 22, 0.98) 0%, rgba(13, 14, 22, 0.85) 100%);
   position: absolute;
   bottom: 0;
   left: 0;
@@ -707,7 +853,7 @@
 
 /* ─── Lead Form ──────────────────────────────────────────────── */
 .l-form {
-  background: rgba(22, 31, 24, 0.9);
+  background: rgba(17, 19, 29, 0.9);
   border: 1px solid rgba(196, 160, 90, 0.2);
   padding: 3rem;
 }
@@ -744,7 +890,7 @@
 .l-form__input,
 .l-form__select {
   width: 100%;
-  background: rgba(11, 21, 14, 0.9);
+  background: rgba(13, 14, 22, 0.9);
   border: 1px solid rgba(196, 160, 90, 0.18);
   color: var(--cream);
   padding: 0.9rem 1rem;
@@ -768,7 +914,7 @@
 }
 
 .l-form__select option {
-  background: #0b150e;
+  background: #0d0e16;
   color: var(--cream);
 }
 
@@ -837,9 +983,13 @@
   color: var(--cream);
 }
 
-.l-footer__logo em {
-  font-style: normal;
-  color: var(--gold);
+.l-footer__logo-img {
+  height: 52px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.65;
 }
 
 .l-footer__copy {
