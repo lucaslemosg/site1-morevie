@@ -1,7 +1,6 @@
 import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ImagePlaceholder } from './components/ImagePlaceholder'; // usado nas demais seções
 import './landing.css';
 
 gsap.registerPlugin(ScrollTrigger);
