@@ -239,16 +239,25 @@
   flex-shrink: 0;
 }
 
-.l-hero__title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(7rem, 14vw, 16rem);
-  font-weight: 300;
-  line-height: 0.83;
-  letter-spacing: -0.02em;
-  display: flex;
-  align-items: flex-end;
-  padding-top: 0.15em;
-  margin-bottom: 1.2rem;
+.l-hero__supertitle {
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.75rem;
+  opacity: 0.9;
+}
+
+.l-hero__brand {
+  width: clamp(300px, 55vw, 700px);
+  height: auto;
+  display: block;
+  margin-bottom: 1rem;
+  filter: brightness(0) invert(1);
+  will-change: transform, opacity;
 }
 
 .hero-letter {
@@ -263,7 +272,7 @@
   color: var(--cream-dim);
   max-width: 460px;
   line-height: 1.9;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.2rem;
   will-change: transform, opacity;
 }
 
@@ -791,7 +800,80 @@
 }
 
 .l-exclusividade__img {
-  height: 600px;
+  height: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* ─── Deck Slider ────────────────────────────────────────────── */
+.deck-slider {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deck-card {
+  position: absolute;
+  width: 88%;
+  height: 88%;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.55s ease,
+              z-index 0s;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  will-change: transform, opacity;
+}
+
+.deck-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.deck-card__caption {
+  position: absolute;
+  bottom: 1.2rem;
+  left: 1.4rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--cream);
+  background: rgba(13, 14, 22, 0.55);
+  padding: 0.35rem 0.8rem;
+  backdrop-filter: blur(6px);
+  border-radius: 2px;
+}
+
+.deck-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--gold);
+  opacity: 0.7;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-top: 1rem;
+  align-self: flex-end;
+  transition: opacity 0.2s ease;
+}
+
+.deck-hint:hover {
+  opacity: 1;
 }
 
 .excl-stats {

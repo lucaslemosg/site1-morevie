@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ImagePlaceholder } from './components/ImagePlaceholder'; // usado nas demais seções
@@ -12,6 +12,20 @@ export function LandingPage() {
   const cursorRingRef = useRef<HTMLDivElement>(null);
   const [navScrolled, setNavScrolled] = useState(false);
   const [formState, setFormState] = useState<'idle' | 'sending' | 'sent'>('idle');
+  const [slideIndex, setSlideIndex] = useState(0);
+  const slides = [
+    { label: 'Bar', src: '/bar.png' },
+    { label: 'Quarto', src: '/quarto.png' },
+    { label: 'Esteira', src: '/esteira.png' },
+  ];
+  const nextSlide = useCallback(() => setSlideIndex(i => (i + 1) % slides.length), [slides.length]);
+
+  const deckStyles = (i: number) => {
+    const offset = (i - slideIndex + slides.length) % slides.length;
+    if (offset === 0) return { zIndex: 3, transform: 'translateX(0) rotate(0deg) scale(1)', opacity: 1 };
+    if (offset === 1) return { zIndex: 2, transform: 'translateX(7%) translateY(-2%) rotate(4deg) scale(0.93)', opacity: 0.85 };
+    return { zIndex: 1, transform: 'translateX(-5%) translateY(-4%) rotate(-3deg) scale(0.87)', opacity: 0.7 };
+  };
 
   /* ── Cursor tracking ─────────────────────────────────────── */
   useLayoutEffect(() => {
@@ -43,57 +57,74 @@ export function LandingPage() {
   /* ── GSAP Animations ─────────────────────────────────────── */
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      /* Hero: estado inicial */
-      gsap.set('.hero-letter',      { clipPath: 'inset(100% 0% 0% 0%)', y: 50, opacity: 0 });
-      gsap.set('.l-hero__tagline',  { opacity: 0, y: 16 });
-      gsap.set('.l-hero__subtitle', { opacity: 0, y: 16 });
-      gsap.set('.l-hero__actions',  { opacity: 0, y: 16 });
-      gsap.set('.l-hero__scroll',   { opacity: 0 });
+      const isMobile = window.innerWidth <= 768;
 
-      /* Hero: pinado — letras constroem de baixo para cima no scroll */
-      const heroTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: '.l-hero',
-          start: 'top top',
-          end: '+=120%',
-          pin: true,
-          scrub: 1,
-          anticipatePin: 1,
-        },
-      });
+      /* Hero: tudo escondido inicialmente */
+      gsap.set('.l-hero__brand',      { opacity: 0, y: 24 });
+      gsap.set('.l-hero__subtitle',   { opacity: 0, y: 20 });
+      gsap.set('.l-hero__actions',    { opacity: 0, y: 20 });
+      gsap.set('.l-hero__scroll',     { opacity: 0 });
 
-      heroTl
-        .to('.hero-letter', {
-          clipPath: 'inset(-20% 0% 0% 0%)',
-          y: 0,
-          opacity: 1,
-          stagger: 0.2,
-          duration: 0.8,
-          ease: 'power3.out',
-        })
-        .to('.l-hero__tagline',  { opacity: 1, y: 0, duration: 0.4 }, '-=0.2')
-        .to('.l-hero__subtitle', { opacity: 1, y: 0, duration: 0.4 }, '-=0.2')
-        .to('.l-hero__actions',  { opacity: 1, y: 0, duration: 0.4 }, '-=0.15')
-        .to('.l-hero__scroll',   { opacity: 1, duration: 0.3 });
+      if (isMobile) {
+        /* Mobile: tudo aparece ao rolar, sem pin */
+        gsap.to('.l-hero__brand', {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: '.l-hero', start: 'top 75%' },
+        });
+        gsap.to('.l-hero__subtitle', {
+          opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
+          scrollTrigger: { trigger: '.l-hero__subtitle', start: 'top 88%' },
+        });
+        gsap.to('.l-hero__actions', {
+          opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
+          scrollTrigger: { trigger: '.l-hero__actions', start: 'top 90%' },
+        });
+        gsap.to('.l-hero__scroll', {
+          opacity: 1, duration: 0.6,
+          scrollTrigger: { trigger: '.l-hero__scroll', start: 'top 95%' },
+        });
 
-      /* Experiência: efeito de janela — 3 imagens reveladas de baixo para cima */
-      gsap.set('.exp-slide-2', { clipPath: 'inset(100% 0% 0% 0%)' });
-      gsap.set('.exp-slide-3', { clipPath: 'inset(100% 0% 0% 0%)' });
+        /* Experiência: sem pin no mobile */
+        gsap.set('.exp-slide-2', { clipPath: 'inset(0% 0% 0% 0%)' });
+        gsap.set('.exp-slide-3', { clipPath: 'inset(0% 0% 0% 0%)' });
+      } else {
+        /* Desktop: hero pinado — tudo constrói no scroll */
+        const heroTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: '.l-hero',
+            start: 'top top',
+            end: '+=150%',
+            pin: true,
+            scrub: 1,
+            anticipatePin: 1,
+          },
+        });
 
-      const expTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: '.l-experiencia',
-          start: 'top top',
-          end: '+=200%',
-          pin: true,
-          scrub: 1,
-          anticipatePin: 1,
-        },
-      });
+        heroTl
+          .to('.l-hero__brand',      { opacity: 1, y: 0, duration: 0.6 })
+          .to('.l-hero__subtitle',   { opacity: 1, y: 0, duration: 0.4 }, '-=0.1')
+          .to('.l-hero__actions',    { opacity: 1, y: 0, duration: 0.4 }, '-=0.1')
+          .to('.l-hero__scroll',     { opacity: 1, duration: 0.3 });
 
-      expTl
-        .to('.exp-slide-2', { clipPath: 'inset(0% 0% 0% 0%)', duration: 1, ease: 'power2.inOut' }, 0)
-        .to('.exp-slide-3', { clipPath: 'inset(0% 0% 0% 0%)', duration: 1, ease: 'power2.inOut' }, 1);
+        /* Experiência: efeito de janela — desktop apenas */
+        gsap.set('.exp-slide-2', { clipPath: 'inset(100% 0% 0% 0%)' });
+        gsap.set('.exp-slide-3', { clipPath: 'inset(100% 0% 0% 0%)' });
+
+        const expTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: '.l-experiencia',
+            start: 'top top',
+            end: '+=200%',
+            pin: true,
+            scrub: 1,
+            anticipatePin: 1,
+          },
+        });
+
+        expTl
+          .to('.exp-slide-2', { clipPath: 'inset(0% 0% 0% 0%)', duration: 1, ease: 'power2.inOut' }, 0)
+          .to('.exp-slide-3', { clipPath: 'inset(0% 0% 0% 0%)', duration: 1, ease: 'power2.inOut' }, 1);
+      }
 
       /* Scroll reveals */
       gsap.utils.toArray<HTMLElement>('.rv-up').forEach((el) => {
@@ -195,13 +226,7 @@ export function LandingPage() {
         <div className="l-hero__overlay" />
 
         <div className="l-hero__content">
-          <span className="l-hero__tagline">Nature Spa · Brasil</span>
-          <div className="l-hero__title" aria-label="Morê">
-            <span className="hero-letter hero-m">M</span>
-            <span className="hero-letter hero-o">O</span>
-            <span className="hero-letter hero-r">R</span>
-            <span className="hero-letter hero-e">Ê</span>
-          </div>
+          <img src="/more.png" alt="Morê Nature Spa" className="l-hero__brand" />
           <p className="l-hero__subtitle">
             Um novo padrão de viver, investir e desacelerar.
           </p>
@@ -326,8 +351,20 @@ export function LandingPage() {
       {/* ── Exclusividade ───────────────────────────────────── */}
       <section className="l-exclusividade">
         <div className="l-exclusividade__img rv-left">
-          {/* SUBSTITUA: vista aérea do empreendimento */}
-          <ImagePlaceholder label="Exclusividade — Vista aérea / Implantação do projeto" />
+          <div className="deck-slider" onClick={nextSlide}>
+            {slides.map((s, i) => (
+              <div key={s.label} className="deck-card" style={deckStyles(i)}>
+                <img src={s.src} alt={s.label} className="deck-card__img" />
+                <span className="deck-card__caption">{s.label}</span>
+              </div>
+            ))}
+          </div>
+          <button className="deck-hint" onClick={nextSlide}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+            <span>próximo</span>
+          </button>
         </div>
         <div className="rv-right">
           <span className="s-label">04 · Exclusividade</span>
@@ -342,20 +379,20 @@ export function LandingPage() {
           </p>
           <div className="excl-stats">
             <div className="excl-stat">
-              <span className="excl-stat__number" data-count="30">0</span>
-              <span className="excl-stat__label">Unidades<br />limitadas</span>
+              <span className="excl-stat__number">+100</span>
+              <span className="excl-stat__label">Unidades<br />disponíveis</span>
             </div>
             <div className="excl-stat">
-              <span className="excl-stat__number" data-count="100">0</span>
-              <span className="excl-stat__label">Hectares de<br />natureza</span>
+              <span className="excl-stat__number">600m</span>
+              <span className="excl-stat__label">Da<br />praia</span>
             </div>
             <div className="excl-stat">
-              <span className="excl-stat__number" data-count="1">0</span>
-              <span className="excl-stat__label">Único<br />empreendimento</span>
+              <span className="excl-stat__number">4</span>
+              <span className="excl-stat__label">Elevadores</span>
             </div>
             <div className="excl-stat">
-              <span className="excl-stat__number">24/7</span>
-              <span className="excl-stat__label">Gestão<br />profissional</span>
+              <span className="excl-stat__number">24hrs</span>
+              <span className="excl-stat__label">Recepção</span>
             </div>
           </div>
         </div>
@@ -433,16 +470,7 @@ export function LandingPage() {
 
                 <div className="l-form__group">
                   <label className="l-form__label" htmlFor="entrada">Valor de entrada disponível</label>
-                  <div style={{ position: 'relative' }}>
-                    <select className="l-form__select" id="entrada" name="entrada" defaultValue="" required>
-                      <option value="" disabled>Selecione sua faixa</option>
-                      <option value="250-500k">R$ 250 mil a R$ 500 mil</option>
-                      <option value="500k-1m">R$ 500 mil a R$ 1 milhão</option>
-                      <option value="1m-2m">R$ 1 milhão a R$ 2 milhões</option>
-                      <option value="2m+">Acima de R$ 2 milhões</option>
-                    </select>
-                    <span className="l-form__select-arrow">▾</span>
-                  </div>
+                  <input className="l-form__input" id="entrada" name="entrada" type="text" placeholder="Ex: R$ 300 mil" required />
                 </div>
 
                 <button
