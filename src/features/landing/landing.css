@@ -15,6 +15,41 @@
   .hide-on-mobile { display: none !important; }
   .l-nav__cta { display: none !important; }
   .l-nav__instagram { opacity: 1; color: var(--gold); }
+
+  .l-hero {
+    height: 200vh;
+    justify-content: flex-start;
+    padding-top: 0;
+    overflow: visible;
+  }
+
+  .l-hero__bg {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    margin-bottom: -100vh;
+  }
+
+  .l-hero__overlay {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    margin-bottom: -100vh;
+  }
+
+  .l-hero__content {
+    position: sticky;
+    top: 28vh;
+    padding: 0 5vw 3rem;
+    z-index: 2;
+  }
+
+  .l-hero__scroll {
+    position: sticky;
+    top: 88vh;
+    z-index: 2;
+    padding: 0 5vw;
+  }
 }
 
 /* ─── Base ───────────────────────────────────────────────────── */
@@ -1116,9 +1151,12 @@
   }
 
   .l-conceito__img,
-  .l-investimento__img,
-  .l-exclusividade__img {
+  .l-investimento__img {
     height: 360px;
+  }
+
+  .l-exclusividade__img {
+    height: 520px;
   }
 
   .l-exclusividade {

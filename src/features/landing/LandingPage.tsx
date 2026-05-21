@@ -65,22 +65,22 @@ export function LandingPage() {
       gsap.set('.l-hero__scroll',     { opacity: 0 });
 
       if (isMobile) {
-        /* Mobile: tudo aparece ao rolar, sem pin */
+        /* Mobile: hero é 200vh, conteúdo sticky — tudo aparece ao rolar */
         gsap.to('.l-hero__brand', {
           opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
-          scrollTrigger: { trigger: '.l-hero', start: 'top 75%' },
+          scrollTrigger: { trigger: '.l-hero', start: 'top+=80 top' },
         });
         gsap.to('.l-hero__subtitle', {
           opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
-          scrollTrigger: { trigger: '.l-hero__subtitle', start: 'top 88%' },
+          scrollTrigger: { trigger: '.l-hero', start: 'top+=200 top' },
         });
         gsap.to('.l-hero__actions', {
           opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
-          scrollTrigger: { trigger: '.l-hero__actions', start: 'top 90%' },
+          scrollTrigger: { trigger: '.l-hero', start: 'top+=320 top' },
         });
         gsap.to('.l-hero__scroll', {
           opacity: 1, duration: 0.6,
-          scrollTrigger: { trigger: '.l-hero__scroll', start: 'top 95%' },
+          scrollTrigger: { trigger: '.l-hero', start: 'top+=420 top' },
         });
 
         /* Experiência: sem pin no mobile */
