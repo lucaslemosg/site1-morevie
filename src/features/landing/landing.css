@@ -17,38 +17,44 @@
   .l-nav__instagram { opacity: 1; color: var(--gold); }
 
   .l-hero {
-    height: 200vh;
-    justify-content: flex-start;
-    padding-top: 0;
-    overflow: visible;
+    height: 180vh;
+    display: block;
+    padding: 0;
   }
 
   .l-hero__bg {
     position: sticky;
     top: 0;
     height: 100vh;
+    width: 100%;
     margin-bottom: -100vh;
+    z-index: 0;
   }
 
   .l-hero__overlay {
     position: sticky;
     top: 0;
     height: 100vh;
+    width: 100%;
     margin-bottom: -100vh;
+    z-index: 1;
   }
 
   .l-hero__content {
     position: sticky;
-    top: 28vh;
-    padding: 0 5vw 3rem;
+    top: 20vh;
+    padding: 0 5vw;
     z-index: 2;
   }
 
-  .l-hero__scroll {
-    position: sticky;
-    top: 88vh;
-    z-index: 2;
-    padding: 0 5vw;
+  .l-hero__scroll { display: none; }
+
+  /* Esconde conteúdo do hero inicialmente no mobile via CSS */
+  .l-hero__brand,
+  .l-hero__subtitle,
+  .l-hero__actions {
+    opacity: 0;
+    transform: translateY(20px);
   }
 }
 

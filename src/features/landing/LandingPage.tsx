@@ -65,23 +65,7 @@ export function LandingPage() {
       gsap.set('.l-hero__scroll',     { opacity: 0 });
 
       if (isMobile) {
-        /* Mobile: hero é 200vh, conteúdo sticky — tudo aparece ao rolar */
-        gsap.to('.l-hero__brand', {
-          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
-          scrollTrigger: { trigger: '.l-hero', start: 'top+=80 top' },
-        });
-        gsap.to('.l-hero__subtitle', {
-          opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
-          scrollTrigger: { trigger: '.l-hero', start: 'top+=200 top' },
-        });
-        gsap.to('.l-hero__actions', {
-          opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
-          scrollTrigger: { trigger: '.l-hero', start: 'top+=320 top' },
-        });
-        gsap.to('.l-hero__scroll', {
-          opacity: 1, duration: 0.6,
-          scrollTrigger: { trigger: '.l-hero', start: 'top+=420 top' },
-        });
+        /* Mobile: nada a fazer aqui — scroll listener fora do context */
 
         /* Experiência: sem pin no mobile */
         gsap.set('.exp-slide-2', { clipPath: 'inset(0% 0% 0% 0%)' });
@@ -173,7 +157,31 @@ export function LandingPage() {
       });
     }, rootRef);
 
-    return () => ctx.revert();
+    /* Mobile: scroll listener fora do gsap.context para cleanup correto */
+    let mobileCleanup: (() => void) | null = null;
+    if (window.innerWidth <= 768) {
+      const revealed = { brand: false, subtitle: false, actions: false };
+      const onHeroScroll = () => {
+        const y = window.scrollY;
+        if (!revealed.brand && y >= 60) {
+          revealed.brand = true;
+          gsap.to('.l-hero__brand', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' });
+        }
+        if (!revealed.subtitle && y >= 160) {
+          revealed.subtitle = true;
+          gsap.to('.l-hero__subtitle', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' });
+        }
+        if (!revealed.actions && y >= 280) {
+          revealed.actions = true;
+          gsap.to('.l-hero__actions', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' });
+          window.removeEventListener('scroll', onHeroScroll);
+        }
+      };
+      window.addEventListener('scroll', onHeroScroll, { passive: true });
+      mobileCleanup = () => window.removeEventListener('scroll', onHeroScroll);
+    }
+
+    return () => { ctx.revert(); mobileCleanup?.(); };
   }, []);
 
   /* ── Form submit ─────────────────────────────────────────── */
@@ -230,7 +238,7 @@ export function LandingPage() {
             Um novo padrão de viver, investir e desacelerar.
           </p>
           <div className="l-hero__actions">
-            <a href="#contato" className="btn-gold hide-on-mobile">Solicitar Apresentação</a>
+            <a href="#contato" className="btn-gold">Solicitar Apresentação</a>
             <a href="#conceito" className="btn-outline">Conhecer o Projeto</a>
           </div>
         </div>
