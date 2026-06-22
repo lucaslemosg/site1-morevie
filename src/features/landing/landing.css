@@ -1121,30 +1121,6 @@
   letter-spacing: 0.08em;
 }
 
-/* ─── Cursor ─────────────────────────────────────────────────── */
-.l-cursor {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--gold);
-  position: fixed;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-  transition: transform 0.1s ease;
-}
-
-.l-cursor-ring {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1px solid rgba(196, 160, 90, 0.45);
-  position: fixed;
-  pointer-events: none;
-  z-index: 9998;
-  transform: translate(-50%, -50%);
-}
-
 /* ─── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .l-conceito,
@@ -1196,8 +1172,5 @@
     text-align: center;
   }
 
-  .l-cursor,
-  .l-cursor-ring {
-    display: none;
-  }
+
 }

@@ -14,9 +14,3 @@ body {
   background: #0d0e16;
 }
 
-/* Hide default cursor globally when landing cursor is active */
-@media (pointer: fine) {
-  .landing * {
-    cursor: none !important;
-  }
-}

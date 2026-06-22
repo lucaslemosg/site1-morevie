@@ -7,8 +7,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function LandingPage() {
   const rootRef = useRef<HTMLDivElement>(null);
-  const cursorRef = useRef<HTMLDivElement>(null);
-  const cursorRingRef = useRef<HTMLDivElement>(null);
   const [navScrolled, setNavScrolled] = useState(false);
   const [formState, setFormState] = useState<'idle' | 'sending' | 'sent'>('idle');
   const [slideIndex, setSlideIndex] = useState(0);
@@ -25,26 +23,6 @@ export function LandingPage() {
     if (offset === 1) return { zIndex: 2, transform: 'translateX(7%) translateY(-2%) rotate(4deg) scale(0.93)', opacity: 0.85 };
     return { zIndex: 1, transform: 'translateX(-5%) translateY(-4%) rotate(-3deg) scale(0.87)', opacity: 0.7 };
   };
-
-  /* ── Cursor tracking ─────────────────────────────────────── */
-  useLayoutEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (cursorRef.current) {
-        cursorRef.current.style.left = `${e.clientX}px`;
-        cursorRef.current.style.top = `${e.clientY}px`;
-      }
-      if (cursorRingRef.current) {
-        gsap.to(cursorRingRef.current, {
-          left: e.clientX,
-          top: e.clientY,
-          duration: 0.25,
-          ease: 'power2.out',
-        });
-      }
-    };
-    window.addEventListener('mousemove', onMove);
-    return () => window.removeEventListener('mousemove', onMove);
-  }, []);
 
   /* ── Nav scroll state ────────────────────────────────────── */
   useLayoutEffect(() => {
@@ -185,10 +163,26 @@ export function LandingPage() {
   }, []);
 
   /* ── Form submit ─────────────────────────────────────────── */
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormState('sending');
-    setTimeout(() => setFormState('sent'), 1600);
+    const form = e.currentTarget;
+    const payload = {
+      nome: (form.elements.namedItem('nome') as HTMLInputElement).value,
+      telefone: (form.elements.namedItem('telefone') as HTMLInputElement).value,
+      email: (form.elements.namedItem('email') as HTMLInputElement).value,
+      entrada: (form.elements.namedItem('entrada') as HTMLInputElement).value,
+    };
+    try {
+      const params = new URLSearchParams(payload);
+      await fetch(
+        `https://script.google.com/macros/s/AKfycbwjXB8MzMjkciGsZmXdYUWrxyJkNAcDNq7kxZToEhnGqlxv6jCtbLjeQJkAXIYt49A6/exec?${params}`,
+        { mode: 'no-cors' },
+      );
+    } catch {
+      // silencia erros de rede; lead é exibido como enviado
+    }
+    setFormState('sent');
   };
 
   /* ── Phone mask ──────────────────────────────────────────── */
@@ -202,10 +196,6 @@ export function LandingPage() {
 
   return (
     <div className="landing" ref={rootRef}>
-      {/* Cursor */}
-      <div className="l-cursor" ref={cursorRef} />
-      <div className="l-cursor-ring" ref={cursorRingRef} />
-
       {/* ── Navigation ──────────────────────────────────────── */}
       <nav className={`l-nav ${navScrolled ? 'is-scrolled' : ''}`}>
         <a href="#hero" className="l-nav__logo">
