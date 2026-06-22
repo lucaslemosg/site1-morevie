@@ -167,12 +167,20 @@ export function LandingPage() {
     e.preventDefault();
     setFormState('sending');
     const form = e.currentTarget;
+    let recaptchaToken = '';
+    try {
+      recaptchaToken = await (window as any).grecaptcha.execute(
+        '6LdXrywtAAAAFy2j-DN8ZYLx5WylydHbfVaqaQ1',
+        { action: 'submit' }
+      );
+    } catch { /* ignora se reCAPTCHA não carregar */ }
     const payload = {
       nome: (form.elements.namedItem('nome') as HTMLInputElement).value,
       telefone: (form.elements.namedItem('telefone') as HTMLInputElement).value,
       email: (form.elements.namedItem('email') as HTMLInputElement).value,
       entrada: (form.elements.namedItem('entrada') as HTMLInputElement).value,
       hp: (form.elements.namedItem('hp') as HTMLInputElement).value,
+      recaptchaToken,
     };
     try {
       await fetch('/api/lead', {
