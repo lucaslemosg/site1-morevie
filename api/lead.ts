@@ -27,9 +27,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const sheetsUrl = process.env.SHEETS_URL;
-  if (!sheetsUrl) return res.status(500).json({ error: 'Config error' });
+  const sheetsToken = process.env.SHEETS_TOKEN;
+  if (!sheetsUrl || !sheetsToken) return res.status(500).json({ error: 'Config error' });
 
-  const params = new URLSearchParams({ nome, telefone, email, entrada });
+  const params = new URLSearchParams({ token: sheetsToken, nome, telefone, email, entrada });
   try {
     await fetch(`${sheetsUrl}?${params}`);
   } catch { /* ignora falha de rede */ }
