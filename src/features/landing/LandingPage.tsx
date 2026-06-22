@@ -9,6 +9,7 @@ export function LandingPage() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [navScrolled, setNavScrolled] = useState(false);
   const [formState, setFormState] = useState<'idle' | 'sending' | 'sent'>('idle');
+  const [formFilled, setFormFilled] = useState(false);
   const [slideIndex, setSlideIndex] = useState(0);
   const slides = [
     { label: 'Bar', src: '/bar.png' },
@@ -438,7 +439,7 @@ export function LandingPage() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} onChange={(e) => setFormFilled(e.currentTarget.checkValidity())}>
                 <input type="text" name="hp" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
                 <div className="l-form__group">
                   <label className="l-form__label" htmlFor="nome">Nome completo</label>
@@ -480,13 +481,13 @@ export function LandingPage() {
 
                 <div className="l-form__group">
                   <label className="l-form__label" htmlFor="entrada">Valor de entrada disponível</label>
-                  <input className="l-form__input" id="entrada" name="entrada" type="text" inputMode="numeric" placeholder="Ex: 300000" onInput={onlyNumbers} required />
+                  <input className="l-form__input" id="entrada" name="entrada" type="text" inputMode="numeric" placeholder="Ex: R$ 300.000" onInput={onlyNumbers} required />
                 </div>
 
                 <button
                   type="submit"
                   className={`l-form__btn ${formState === 'sending' ? 'l-form__btn--sent' : ''}`}
-                  disabled={formState === 'sending'}
+                  disabled={!formFilled || formState === 'sending'}
                 >
                   {formState === 'sending' ? 'Enviando...' : 'Solicitar Apresentação Privada'}
                 </button>
