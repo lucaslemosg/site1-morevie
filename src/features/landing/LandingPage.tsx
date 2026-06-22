@@ -194,6 +194,10 @@ export function LandingPage() {
     e.target.value = v;
   };
 
+  const onlyNumbers = (e: React.FormEvent<HTMLInputElement>) => {
+    e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '');
+  };
+
   return (
     <div className="landing" ref={rootRef}>
       {/* ── Navigation ──────────────────────────────────────── */}
@@ -448,6 +452,7 @@ export function LandingPage() {
                     id="telefone"
                     name="telefone"
                     placeholder="(00) 00000-0000"
+                    inputMode="numeric"
                     onChange={maskPhone}
                     required
                   />
@@ -467,7 +472,7 @@ export function LandingPage() {
 
                 <div className="l-form__group">
                   <label className="l-form__label" htmlFor="entrada">Valor de entrada disponível</label>
-                  <input className="l-form__input" id="entrada" name="entrada" type="text" placeholder="Ex: R$ 300 mil" required />
+                  <input className="l-form__input" id="entrada" name="entrada" type="text" inputMode="numeric" placeholder="Ex: 300000" onInput={onlyNumbers} required />
                 </div>
 
                 <button
