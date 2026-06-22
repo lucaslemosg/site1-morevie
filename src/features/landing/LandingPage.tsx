@@ -172,16 +172,15 @@ export function LandingPage() {
       telefone: (form.elements.namedItem('telefone') as HTMLInputElement).value,
       email: (form.elements.namedItem('email') as HTMLInputElement).value,
       entrada: (form.elements.namedItem('entrada') as HTMLInputElement).value,
+      hp: (form.elements.namedItem('hp') as HTMLInputElement).value,
     };
     try {
-      const params = new URLSearchParams(payload);
-      await fetch(
-        `https://script.google.com/macros/s/AKfycbyW7iXlNg2pePlIBoKhqJ5huNqASoKjv2WnKkp3WpoB-_2Uxh0bEz-fG8fjBEtNVGh37w/exec?${params}`,
-        { mode: 'no-cors' },
-      );
-    } catch {
-      // silencia erros de rede; lead é exibido como enviado
-    }
+      await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch { /* ignora */ }
     setFormState('sent');
   };
 
@@ -432,6 +431,7 @@ export function LandingPage() {
               </div>
             ) : (
               <form onSubmit={handleSubmit}>
+                <input type="text" name="hp" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
                 <div className="l-form__group">
                   <label className="l-form__label" htmlFor="nome">Nome completo</label>
                   <input
