@@ -176,7 +176,7 @@ export function LandingPage() {
     try {
       const params = new URLSearchParams(payload);
       await fetch(
-        `https://script.google.com/macros/s/AKfycbwjXB8MzMjkciGsZmXdYUWrxyJkNAcDNq7kxZToEhnGqlxv6jCtbLjeQJkAXIYt49A6/exec?${params}`,
+        `https://script.google.com/macros/s/AKfycbyW7iXlNg2pePlIBoKhqJ5huNqASoKjv2WnKkp3WpoB-_2Uxh0bEz-fG8fjBEtNVGh37w/exec?${params}`,
         { mode: 'no-cors' },
       );
     } catch {
