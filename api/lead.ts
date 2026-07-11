@@ -4,6 +4,10 @@ const ALLOWED_ORIGIN = 'https://site1-morevie.vercel.app';
 const RECAPTCHA_VERIFY = 'https://www.google.com/recaptcha/api/siteverify';
 const MIN_SCORE = 0.5;
 
+const MOSU_COMPANY_ID = '01KS35KZ5QTH5RQ0Q115KXT016';
+const MOSU_FUNNEL_ID = '01KVT1NFGDM98FQE7M4N7A4AJZ';
+const CURRENT_OPERATOR_URL = `https://api.mosu.com.br/api/public/companies/${MOSU_COMPANY_ID}/funnels/${MOSU_FUNNEL_ID}/current-operator`;
+
 const ipRequests = new Map<string, { count: number; windowStart: number }>();
 const WINDOW_MS = 60 * 60 * 1000;
 const MAX_PER_WINDOW = 5;
@@ -51,10 +55,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const sheetsToken = process.env.SHEETS_TOKEN;
   if (!sheetsUrl || !sheetsToken) return res.status(500).json({ error: 'Config error' });
 
+  // 1) busca o operador atual para direcionar o lead ao WhatsApp
+  let phone: string | null = null;
+  try {
+    const opRes = await fetch(CURRENT_OPERATOR_URL, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (opRes.ok) {
+      const data = (await opRes.json()) as { phone?: string };
+      phone = data.phone ?? null;
+    }
+  } catch { /* não bloqueia o lead */ }
+
+  // 2) grava o lead na planilha
   const params = new URLSearchParams({ token: sheetsToken, nome, telefone, email, entrada });
   try {
     await fetch(`${sheetsUrl}?${params}`);
   } catch { /* ignora */ }
 
-  return res.status(200).json({ ok: true });
+  return res.status(200).json({ ok: true, phone });
 }

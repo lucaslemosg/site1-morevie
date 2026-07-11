@@ -168,6 +168,10 @@ export function LandingPage() {
     e.preventDefault();
     setFormState('sending');
     const form = e.currentTarget;
+
+    // abre a aba de forma síncrona (dentro do gesto de clique) para escapar do bloqueador de pop-up
+    const waWindow = window.open('', '_blank');
+
     let recaptchaToken = '';
     try {
       recaptchaToken = await (window as any).grecaptcha.execute(
@@ -183,13 +187,25 @@ export function LandingPage() {
       hp: (form.elements.namedItem('hp') as HTMLInputElement).value,
       recaptchaToken,
     };
+    let phone: string | null = null;
     try {
-      await fetch('/api/lead', {
+      const res = await fetch('/api/lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      const data = (await res.json()) as { phone?: string | null };
+      phone = data.phone ?? null;
     } catch { /* ignora */ }
+
+    if (phone) {
+      const message = buildWhatsappMessage(payload.nome, payload.entrada);
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      if (waWindow) waWindow.location.href = url;
+    } else {
+      waWindow?.close();
+    }
+
     setFormState('sent');
   };
 
@@ -205,6 +221,16 @@ export function LandingPage() {
   const onlyNumbers = (e: React.FormEvent<HTMLInputElement>) => {
     e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '');
   };
+
+  /* ── WhatsApp helpers ────────────────────────────────────── */
+  const formatEntrada = (raw: string) => {
+    const n = Number(raw);
+    return raw && !Number.isNaN(n) ? `R$ ${n.toLocaleString('pt-BR')}` : raw;
+  };
+
+  const buildWhatsappMessage = (nome: string, entrada: string) =>
+    `Olá! Sou ${nome} e vim pelo site da Morevie. Gostaria de receber a apresentação privada.\n\n` +
+    `Valor de entrada disponível: ${formatEntrada(entrada)}`;
 
   return (
     <div className="landing" ref={rootRef}>
