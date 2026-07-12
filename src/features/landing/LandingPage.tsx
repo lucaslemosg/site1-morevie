@@ -164,47 +164,31 @@ export function LandingPage() {
   }, []);
 
   /* ── Form submit ─────────────────────────────────────────── */
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setFormState('sending');
     const form = e.currentTarget;
+
+    // valida os campos obrigatórios (nome, telefone, email, entrada) antes de prosseguir
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    setFormState('sending');
 
     // abre a aba de forma síncrona (dentro do gesto de clique) para escapar do bloqueador de pop-up
     const waWindow = window.open('', '_blank');
 
-    let recaptchaToken = '';
-    try {
-      recaptchaToken = await (window as any).grecaptcha.execute(
-        '6LdXrywtAAAAFy2j-DN8ZYLx5WylydHbfVaqaQ1',
-        { action: 'submit' }
-      );
-    } catch { /* ignora se reCAPTCHA não carregar */ }
-    const payload = {
+    // o /api/lead grava o lead na planilha, resolve o operador e redireciona (302) pro WhatsApp
+    const params = new URLSearchParams({
       nome: (form.elements.namedItem('nome') as HTMLInputElement).value,
       telefone: (form.elements.namedItem('telefone') as HTMLInputElement).value,
       email: (form.elements.namedItem('email') as HTMLInputElement).value,
       entrada: (form.elements.namedItem('entrada') as HTMLInputElement).value,
       hp: (form.elements.namedItem('hp') as HTMLInputElement).value,
-      recaptchaToken,
-    };
-    let phone: string | null = null;
-    try {
-      const res = await fetch('/api/lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = (await res.json()) as { phone?: string | null };
-      phone = data.phone ?? null;
-    } catch { /* ignora */ }
-
-    if (phone) {
-      const message = buildWhatsappMessage(payload.nome, payload.entrada);
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-      if (waWindow) waWindow.location.href = url;
-    } else {
-      waWindow?.close();
-    }
+    });
+    const url = `/api/lead?${params}`;
+    if (waWindow) waWindow.location.href = url;
+    else window.location.href = url;
 
     setFormState('sent');
   };
@@ -221,16 +205,6 @@ export function LandingPage() {
   const onlyNumbers = (e: React.FormEvent<HTMLInputElement>) => {
     e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '');
   };
-
-  /* ── WhatsApp helpers ────────────────────────────────────── */
-  const formatEntrada = (raw: string) => {
-    const n = Number(raw);
-    return raw && !Number.isNaN(n) ? `R$ ${n.toLocaleString('pt-BR')}` : raw;
-  };
-
-  const buildWhatsappMessage = (nome: string, entrada: string) =>
-    `Olá! Sou ${nome} e vim pelo site da Morevie. Gostaria de receber a apresentação privada.\n\n` +
-    `Valor de entrada disponível: ${formatEntrada(entrada)}`;
 
   return (
     <div className="landing" ref={rootRef}>
