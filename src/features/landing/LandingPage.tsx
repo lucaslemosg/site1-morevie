@@ -5,6 +5,22 @@ import './landing.css';
 
 gsap.registerPlugin(ScrollTrigger);
 
+/* Endpoint público do bff: resolve o operador da vez, insere o lead na planilha
+   (sheet=google) e responde 302 pro WhatsApp. */
+const MOSU_COMPANY_ID = '01KS35KZ5QTH5RQ0Q115KXT016';
+const MOSU_FUNNEL_ID = '01KVT1NFGDM98FQE7M4N7A4AJZ';
+const WHATSAPP_REDIRECT_URL =
+  `https://api.mosu.com.br/api/public/companies/${MOSU_COMPANY_ID}/funnels/${MOSU_FUNNEL_ID}/current-operator/url`;
+
+const formatEntrada = (raw: string) => {
+  const n = Number(raw);
+  return raw && !Number.isNaN(n) ? `R$ ${n.toLocaleString('pt-BR')}` : raw;
+};
+
+const buildWhatsappMessage = (nome: string, entrada: string) =>
+  `Olá! Sou ${nome} e vim pelo site da Morevie. Gostaria de receber a apresentação privada.\n\n` +
+  `Valor de entrada disponível: ${formatEntrada(entrada)}`;
+
 export function LandingPage() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [navScrolled, setNavScrolled] = useState(false);
@@ -164,32 +180,41 @@ export function LandingPage() {
   }, []);
 
   /* ── Form submit ─────────────────────────────────────────── */
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setFormState('sending');
     const form = e.currentTarget;
-    let recaptchaToken = '';
-    try {
-      recaptchaToken = await (window as any).grecaptcha.execute(
-        '6LdXrywtAAAAFy2j-DN8ZYLx5WylydHbfVaqaQ1',
-        { action: 'submit' }
-      );
-    } catch { /* ignora se reCAPTCHA não carregar */ }
-    const payload = {
-      nome: (form.elements.namedItem('nome') as HTMLInputElement).value,
-      telefone: (form.elements.namedItem('telefone') as HTMLInputElement).value,
-      email: (form.elements.namedItem('email') as HTMLInputElement).value,
-      entrada: (form.elements.namedItem('entrada') as HTMLInputElement).value,
-      hp: (form.elements.namedItem('hp') as HTMLInputElement).value,
-      recaptchaToken,
-    };
-    try {
-      await fetch('/api/lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-    } catch { /* ignora */ }
+
+    // valida os campos obrigatórios (nome, telefone, email, entrada) antes de prosseguir
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    setFormState('sending');
+
+    // abre a aba de forma síncrona (dentro do gesto de clique) para escapar do bloqueador de pop-up
+    const waWindow = window.open('', '_blank');
+
+    const nome = (form.elements.namedItem('nome') as HTMLInputElement).value;
+    const telefone = (form.elements.namedItem('telefone') as HTMLInputElement).value;
+    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+    const entrada = (form.elements.namedItem('entrada') as HTMLInputElement).value;
+    const hp = (form.elements.namedItem('hp') as HTMLInputElement).value;
+
+    // o bff resolve o operador, insere o lead na planilha (sheet=google) e
+    // redireciona (302) pro WhatsApp com a mensagem montada aqui.
+    const params = new URLSearchParams({
+      sheet: 'google',
+      text: buildWhatsappMessage(nome, entrada),
+      nome,
+      telefone,
+      email,
+      entrada,
+      hp,
+    });
+    const url = `${WHATSAPP_REDIRECT_URL}?${params}`;
+    if (waWindow) waWindow.location.href = url;
+    else window.location.href = url;
+
     setFormState('sent');
   };
 
