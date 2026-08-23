@@ -682,6 +682,13 @@ export function LandingPage() {
           <img src="/logo.png" alt="Morê Nature Spa" className="l-footer__logo-img" />
         </div>
         <p className="l-footer__copy">© 2025 Morê Nature Spa. Todos os direitos reservados.</p>
+        {/* Assinatura padrão da Mosu, igual em todos os sites que fazemos. */}
+        <p className="l-footer__by">
+          Feito por{' '}
+          <a href="https://mosu.com.br" target="_blank" rel="noopener noreferrer">
+            Mosu
+          </a>
+        </p>
       </footer>
     </div>
   );

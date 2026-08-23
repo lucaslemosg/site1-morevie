@@ -1244,6 +1244,25 @@
   letter-spacing: 0.08em;
 }
 
+.l-footer__by {
+  margin-top: 0.5rem;
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.l-footer__by a {
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(138, 95, 34, 0.35);
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+
+.l-footer__by a:hover {
+  color: var(--brand-green);
+  border-bottom-color: var(--brand-green);
+}
+
 /* ─── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .l-conceito,
