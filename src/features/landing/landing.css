@@ -411,34 +411,45 @@
   position: absolute;
   bottom: 2.5rem;
   right: 5vw;
-  z-index: 2;
+  z-index: 4;
   display: flex;
-  flex-direction: column;
+  /* A seta fica depois do texto: encostada na direita, ela aponta para onde a
+     rolagem leva, e o olho lê o aviso antes do gesto. */
+  flex-direction: row-reverse;
   align-items: center;
   gap: 0.6rem;
+  pointer-events: none;
   will-change: opacity;
 }
 
 .l-hero__scroll span {
-  font-size: 0.55rem;
-  letter-spacing: 0.35em;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--muted);
-  writing-mode: vertical-rl;
+  white-space: nowrap;
+  color: var(--gold);
 }
 
+/* Seta apontando para baixo, no lugar da linha vertical de 56px: num aviso
+   deitado ela não cabia, e o gesto que se quer sugerir é rolar. */
 .l-hero__scroll-line {
-  width: 1px;
-  height: 56px;
-  background: linear-gradient(to bottom, var(--gold), transparent);
-  animation: scrollPulse 2.2s ease-in-out infinite;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--gold);
+  border-bottom: 1.5px solid var(--gold);
+  transform: rotate(45deg);
+  animation: scrollPulse 1.9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .l-hero__scroll-line {
+    animation: none;
+  }
 }
 
 @keyframes scrollPulse {
-  0%   { transform: scaleY(0); transform-origin: top; opacity: 1; }
-  49%  { transform: scaleY(1); transform-origin: top; opacity: 1; }
-  50%  { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
-  100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+  0%, 100% { transform: rotate(45deg) translate(0, 0); opacity: 0.55; }
+  50%      { transform: rotate(45deg) translate(3px, 3px); opacity: 1; }
 }
 
 /* ─── Buttons ────────────────────────────────────────────────── */

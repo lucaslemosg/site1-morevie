@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { HERO_FRAME_COUNT, containRect, frameIndexFromProgress, framePath, scaleRect, shiftRect, shouldRenderModel } from '../../lib/frameScrub';
+import { HERO_FRAME_COUNT, containRect, frameIndexFromProgress, framePath, scaleRect, scrollHintOpacity, shiftRect, shouldRenderModel } from '../../lib/frameScrub';
 import { shouldNavBeSolid } from '../../lib/navSolid';
 import './landing.css';
 
@@ -120,6 +120,11 @@ export function LandingPage() {
       if (!canvas) return;
       if (!shouldRenderModel(window.innerWidth, false)) return;
       progressRef.current = progress;
+
+      /* O aviso acompanha o mesmo progresso do scrub: some conforme a obra
+         começa, em vez de depender de um tween à parte que poderia dessincronizar. */
+      const aviso = document.querySelector<HTMLElement>('.l-hero__scroll');
+      if (aviso) aviso.style.opacity = String(scrollHintOpacity(progress));
       const index = frameIndexFromProgress(progress, HERO_FRAME_COUNT);
       if (index === paintedRef.current && !force) return;
 
@@ -171,7 +176,7 @@ export function LandingPage() {
       gsap.set('.l-hero__brand',      { opacity: 1, y: 0 });
       gsap.set('.l-hero__subtitle',   { opacity: 1, y: 0 });
       gsap.set('.l-hero__actions',    { opacity: 1, y: 0 });
-      gsap.set('.l-hero__scroll',     { opacity: 0 });
+      gsap.set('.l-hero__scroll',     { opacity: 1 });
 
       if (isMobile) {
         /* Mobile: a hero é só a marca e os botões, sem maquete para animar. */
@@ -180,23 +185,21 @@ export function LandingPage() {
         gsap.set('.exp-slide-2', { clipPath: 'inset(0% 0% 0% 0%)' });
         gsap.set('.exp-slide-3', { clipPath: 'inset(0% 0% 0% 0%)' });
       } else {
-        /* Desktop: hero pinado — tudo constrói no scroll */
-        const heroTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: '.l-hero',
-            start: 'top top',
-            end: '+=150%',
-            pin: true,
-            scrub: 1,
-            anticipatePin: 1,
-            /* As etapas são pintadas direto do progresso, e não por tweens
-               encadeados: a mistura precisa somar 1 em qualquer ponto, senão
-               a hero escurece no meio de cada transição. */
-            onUpdate: ({ progress }) => paintFrame(progress),
-          },
+        /* Desktop: a hero fica pinada enquanto a maquete se constrói.
+           Um ScrollTrigger puro, sem timeline: não há mais tween nenhum aqui.
+           Frame e aviso são escritos direto do progresso, porque o valor já
+           vem interpolado pelo scrub — animar por cima atrasaria a imagem em
+           relação ao dedo. */
+        ScrollTrigger.create({
+          trigger: '.l-hero',
+          start: 'top top',
+          end: '+=150%',
+          pin: true,
+          scrub: 1,
+          anticipatePin: 1,
+          onUpdate: ({ progress }) => paintFrame(progress),
         });
 
-        heroTl.to('.l-hero__scroll', { opacity: 1, duration: 0.3 });
 
         /* Experiência: efeito de janela — desktop apenas */
         gsap.set('.exp-slide-2', { clipPath: 'inset(100% 0% 0% 0%)' });
@@ -372,7 +375,7 @@ export function LandingPage() {
 
         <div className="l-hero__scroll">
           <div className="l-hero__scroll-line" />
-          <span>Scroll</span>
+          <span>Role para construir o Morê</span>
         </div>
 
         {/* Onda de saída da hero. SVG estático: sem JS, sem animação por frame

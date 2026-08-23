@@ -80,3 +80,19 @@ export function shouldRenderModel(viewportWidth: number, reducedMotion: boolean)
   if (reducedMotion) return false;
   return viewportWidth > MOBILE_BREAKPOINT;
 }
+
+/**
+ * Opacity of the "scroll to build" hint for a given scrub progress.
+ *
+ * The hero opens on an empty plot: without a prompt there is nothing telling
+ * the visitor that the building is theirs to raise, and a still photo of dirt
+ * is a poor first impression. The hint therefore starts fully visible and
+ * clears out as soon as the construction is under way — it has done its job
+ * by then, and would only compete with the model.
+ */
+export function scrollHintOpacity(progress: number): number {
+  const FIM = 0.14;
+  if (progress <= 0) return 1;
+  if (progress >= FIM) return 0;
+  return 1 - progress / FIM;
+}
