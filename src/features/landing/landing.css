@@ -1,12 +1,25 @@
 /* ─── Design Tokens ──────────────────────────────────────────── */
 :root {
-  --bg-dark: #0d0e16;
-  --bg-medium: #11131d;
-  --bg-section: #161821;
-  --gold: #c4a05a;
-  --gold-light: #d4b878;
-  --cream: #f3efe8;
-  --cream-dim: #ccc6bc;
+  /* Tema claro. Os nomes seguem os de antes para não espalhar renomeação por
+     1200 linhas, mas os papéis inverteram: bg-* agora são superfícies claras e
+     cream-* são a tinta escura. */
+  /* Base puxada para o verde, não para o azul: o azul-bebê dominava a página
+     inteira e o verde da marca quase não aparecia. */
+  --bg-dark: #f3f8f5;      /* superfície principal */
+  --bg-medium: #dfeee7;    /* seção alternada, eucalipto */
+  --bg-section: #cbe3e0;   /* seção de destaque, verde-água */
+  --foam: rgba(58, 178, 221, 0.08);   /* véu azul para sobrepor */
+  --kelp: rgba(27, 80, 46, 0.06);     /* véu verde para sobrepor */
+  --ink: #12222b;          /* texto principal */
+  --ink-dim: #55707e;      /* texto secundário */
+  --gold: #8a5f22;
+  --gold-light: #a8762f;
+  --cream: #12222b;        /* era claro sobre escuro; agora é a tinta */
+  --cream-dim: #55707e;
+  /* As três ondas do logo — a identidade da Morevie. */
+  --brand-blue: #3ab2dd;
+  --brand-gold: #b08546;
+  --brand-green: #1b502e;
   --sage: #8aafc8;
   --muted: #566880;
 }
@@ -49,13 +62,7 @@
 
   .l-hero__scroll { display: none; }
 
-  /* Esconde conteúdo do hero inicialmente no mobile via CSS */
-  .l-hero__brand,
-  .l-hero__subtitle,
-  .l-hero__actions {
-    opacity: 0;
-    transform: translateY(20px);
-  }
+
 }
 
 /* ─── Base ───────────────────────────────────────────────────── */
@@ -84,20 +91,64 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: background 0.5s ease, padding 0.3s ease, border-color 0.5s ease;
-  border-bottom: 1px solid transparent;
+  padding: 0.5rem 5vw;
+  transition: padding 0.3s ease, background 0.4s ease;
+  /* A barra em si não pinta nada: quem faz o véu é o ::before, numa camada
+     só. Antes o efeito estava dividido entre a barra e a faixa de baixo, com
+     brilhos diferentes (106% e 104%) — o encontro dos dois desenhava a reta
+     entre dois tons de azul no topo da hero. */
+  background: transparent;
+  border-bottom: none;
 }
 
+.l-nav::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Cobre a barra e mais um tanto: a dissipação inteira acontece dentro deste
+     único elemento, então não há fronteira entre duas camadas. */
+  height: 190%;
+  pointer-events: none;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.2) 42%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  /* Desfoque leve: o de 12px embaçava a hero inteira atrás da barra e era a
+     maior fonte da sensação de "tudo borrado". */
+  backdrop-filter: blur(5px) saturate(115%);
+  -webkit-backdrop-filter: blur(5px) saturate(115%);
+  /* A máscara é o que dissolve o desfoque junto com a cor — sem ela o blur
+     terminaria num corte reto mesmo com o gradiente suave por cima. */
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.6) 46%, rgba(0, 0, 0, 0.2) 74%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.6) 46%, rgba(0, 0, 0, 0.2) 74%, transparent 100%);
+}
+
+
+
 .l-nav.is-scrolled {
-  background: rgba(13, 14, 22, 0.96);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 0.4rem 5vw;
-  border-bottom-color: rgba(196, 160, 90, 0.15);
+  padding: 0.35rem 5vw;
+}
+
+/* Rolando, o véu ganha corpo — mas continua sendo a mesma camada única, então
+   a dissipação para a seção de baixo não muda de comportamento. */
+.l-nav.is-scrolled::before {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.34) 46%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
 }
 
 .l-nav__logo {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: 1.5rem;
   font-weight: 400;
   letter-spacing: 0.18em;
@@ -107,11 +158,12 @@
 }
 
 .l-nav__logo-img {
-  height: 96px;
+  height: 42px;
   width: auto;
   display: block;
   object-fit: contain;
-  filter: brightness(0) invert(1);
+  /* Sem o brightness(0) invert(1) que existia para o header escuro: ele
+     achatava o logo em branco puro e apagava as três ondas da marca. */
 }
 
 .l-nav__actions {
@@ -124,9 +176,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--gold);
+  color: var(--brand-green);
   text-decoration: none;
-  opacity: 0.85;
+  opacity: 0.9;
   transition: opacity 0.25s ease, transform 0.25s ease;
   padding: 0.25rem;
 }
@@ -137,10 +189,12 @@
 }
 
 .l-nav__cta {
-  background: var(--gold);
-  border: none;
-  color: var(--bg-dark);
-  padding: 0.75rem 1.8rem;
+  /* Contorno em vez de bloco sólido: o botão preenchido pesava demais no
+     vidro claro e brigava com o logo colorido ao lado. */
+  background: transparent;
+  border: 1px solid var(--brand-green);
+  color: var(--brand-green);
+  padding: 0.6rem 1.5rem;
   font-family: 'Montserrat', sans-serif;
   font-size: 0.65rem;
   font-weight: 600;
@@ -150,11 +204,12 @@
   transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
   text-decoration: none;
   display: inline-block;
-  box-shadow: 0 2px 16px rgba(196, 160, 90, 0.35);
+  box-shadow: none;
 }
 
 .l-nav__cta:hover {
-  background: var(--gold-light);
+  background: var(--brand-green);
+  color: #ffffff;
   transform: translateY(-1px);
   box-shadow: 0 4px 24px rgba(196, 160, 90, 0.5);
 }
@@ -165,8 +220,9 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: center top;
+  /* Sem transform: o canvas cobre a hero inteira e o deslocamento acontece
+     dentro do drawImage. Deslocar o elemento deixava uma faixa à esquerda
+     pintada pelo CSS, e a diferença de cor virava uma linha vertical. */
 }
 
 /* ─── Image Placeholder ──────────────────────────────────────── */
@@ -226,6 +282,27 @@
   justify-content: flex-end;
   padding: 0 5vw 10vh;
   overflow: hidden;
+  /* Água, não cor chapada: claro no alto como a superfície pegando luz,
+     fundo mais denso embaixo, e duas faixas horizontais de brilho no lugar
+     onde o sol bate. Tudo em gradiente — nenhum custo de runtime. */
+  background:
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(255, 255, 255, 0.05) 22%,
+      rgba(255, 255, 255, 0) 40%),
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0) 44%,
+      rgba(255, 255, 255, 0.16) 52%,
+      rgba(255, 255, 255, 0) 60%),
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0) 68%,
+      rgba(255, 255, 255, 0.1) 74%,
+      rgba(255, 255, 255, 0) 80%),
+    linear-gradient(180deg,
+      #cfe9e6 0%,
+      #b3d9d7 46%,
+      #93c6c8 78%,
+      #7fb9bd 100%);
 }
 
 .l-hero__bg {
@@ -241,19 +318,22 @@
 .l-hero__overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(13, 14, 22, 0.15) 0%,
-    rgba(13, 14, 22, 0.05) 35%,
-    rgba(13, 14, 22, 0.75) 75%,
-    rgba(13, 14, 22, 1) 100%
-  );
+  /* Nada de escurecimento. O que havia aqui era a emenda com a seção escura do
+     tema antigo — terminava em tinta opaca na base e desenhava uma faixa preta
+     reta bem em cima da onda. A transição agora é a própria onda. */
+  background: none;
   z-index: 1;
+  pointer-events: none;
 }
 
 .l-hero__content {
   position: relative;
   z-index: 2;
+  /* A maquete foi deslocada para a direita; o texto ocupa a faixa da
+     esquerda que ficou livre. */
+  margin-right: auto;
+  width: min(44%, 36rem);
+  text-align: left;
 }
 
 
@@ -297,7 +377,9 @@
   height: auto;
   display: block;
   margin-bottom: 1rem;
-  filter: brightness(0) invert(1);
+  /* O arquivo é branco puro; sobre a hera aqua ele precisa virar a tinta
+     escura da marca (1.30 de contraste em branco contra 12.57 em tinta). */
+  filter: brightness(0) saturate(100%) invert(11%) sepia(18%) saturate(1400%) hue-rotate(155deg) brightness(95%) contrast(92%);
   will-change: transform, opacity;
 }
 
@@ -310,7 +392,7 @@
 .l-hero__subtitle {
   font-size: 0.85rem;
   letter-spacing: 0.12em;
-  color: var(--cream-dim);
+  color: #2c4a57;
   max-width: 460px;
   line-height: 1.9;
   margin-bottom: 1.2rem;
@@ -361,8 +443,11 @@
 
 /* ─── Buttons ────────────────────────────────────────────────── */
 .btn-gold {
+  /* Dourado da marca. Este tom, e não o #b08546 do logo: o do logo deixa o
+     rótulo branco em 3.34 e destaca só 2.48 da hero — some nos dois sentidos.
+     Aqui são 5.61 e 4.17. */
   background: var(--gold);
-  color: var(--bg-dark);
+  color: #ffffff;
   border: none;
   padding: 1rem 2.5rem;
   font-family: 'Montserrat', sans-serif;
@@ -371,20 +456,26 @@
   letter-spacing: 0.22em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.25s ease;
+  transition: background 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
   text-decoration: none;
+  /* Sombra suave e esverdeada: a sombra preta forte do tema escuro sujava o
+     fundo claro em vez de dar relevo. */
+  box-shadow: 0 6px 18px rgba(18, 34, 43, 0.16);
   display: inline-block;
 }
 
 .btn-gold:hover {
-  background: var(--gold-light);
+  background: #a8762f;
   transform: translateY(-2px);
 }
 
 .btn-outline {
-  background: transparent;
+  /* Vidro claro sobre a hero aqua: o véu escuro do tema anterior virava uma
+     mancha suja aqui. */
+  background: rgba(255, 255, 255, 0.55);
   color: var(--gold);
   border: 1px solid var(--gold);
+  box-shadow: 0 4px 14px rgba(18, 34, 43, 0.1);
   padding: 1rem 2.5rem;
   font-family: 'Montserrat', sans-serif;
   font-size: 0.65rem;
@@ -399,6 +490,7 @@
 
 .btn-outline:hover {
   background: var(--gold);
+  color: #ffffff;
   color: var(--bg-dark);
   transform: translateY(-2px);
 }
@@ -435,7 +527,7 @@
 }
 
 .s-title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: clamp(2.4rem, 4.5vw, 4.2rem);
   font-weight: 300;
   line-height: 1.1;
@@ -468,7 +560,6 @@
   grid-template-columns: 1fr 1fr;
   gap: 7rem;
   align-items: center;
-  background: var(--bg-dark);
 }
 
 .l-conceito__text {
@@ -510,7 +601,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid rgba(196, 160, 90, 0.18);
+  border: 1px solid rgba(58, 178, 221, 0.28);
   pointer-events: none;
   z-index: 2;
 }
@@ -533,7 +624,7 @@
   right: -18px;
   width: 180px;
   height: 180px;
-  border: 1px solid rgba(196, 160, 90, 0.18);
+  border: 1px solid rgba(58, 178, 221, 0.28);
   pointer-events: none;
 }
 
@@ -572,9 +663,16 @@
 .l-experiencia__overlay {
   position: absolute;
   inset: 0;
+  /* Véu claro no lugar do escuro: com o tema invertido o texto virou tinta
+     escura, e sobre o véu antigo ficava escuro sobre escuro. As bordas
+     emendam com as seções vizinhas, que agora são claras. */
   background:
-    linear-gradient(to bottom, rgba(13, 14, 22, 1) 0%, rgba(13, 14, 22, 0) 22%, rgba(13, 14, 22, 0) 78%, rgba(13, 14, 22, 1) 100%),
-    rgba(13, 14, 22, 0.72);
+    linear-gradient(to bottom,
+      var(--bg-dark) 0%,
+      rgba(244, 250, 251, 0) 20%,
+      rgba(244, 250, 251, 0) 80%,
+      var(--bg-dark) 100%),
+    linear-gradient(to bottom, rgba(214, 236, 242, 0.86), rgba(232, 245, 248, 0.9));
 }
 
 .l-experiencia__content {
@@ -586,7 +684,7 @@
 
 .experiencia-title {
   font-size: clamp(3rem, 6vw, 6rem) !important;
-  text-shadow: 0 4px 32px rgba(0, 0, 0, 0.7);
+  color: var(--ink);
 }
 
 .l-experiencia__content .s-label {
@@ -595,11 +693,17 @@
 }
 
 .l-experiencia__content .feat-item h4 {
-  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.8);
+  color: var(--ink);
+  font-weight: 600;
 }
 
 .l-experiencia__content .feat-item p {
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+  color: #3d5c68;
+}
+
+.l-experiencia__content .s-text,
+.l-experiencia__content .s-title {
+  color: var(--ink);
 }
 
 .l-experiencia__features {
@@ -617,7 +721,7 @@
 .feat-item__icon {
   width: 52px;
   height: 52px;
-  border: 1px solid rgba(196, 160, 90, 0.4);
+  border: 1px solid rgba(58, 178, 221, 0.50);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -633,7 +737,7 @@
 }
 
 .feat-item h4 {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: 1.15rem;
   font-weight: 400;
   color: var(--cream);
@@ -659,7 +763,7 @@
 }
 
 .l-wellness__quote {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: clamp(1.8rem, 3vw, 3rem);
   font-style: italic;
   font-weight: 300;
@@ -677,7 +781,7 @@
 
 .w-card {
   padding: 3rem 2rem;
-  border: 1px solid rgba(196, 160, 90, 0.12);
+  border: 1px solid rgba(58, 178, 221, 0.22);
   transition: border-color 0.35s ease, background 0.35s ease;
 }
 
@@ -693,7 +797,7 @@
 }
 
 .w-card h3 {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: 1.4rem;
   font-weight: 400;
   color: var(--cream);
@@ -713,11 +817,10 @@
   grid-template-columns: 1fr 1fr;
   gap: 8rem;
   align-items: center;
-  background: var(--bg-dark);
 }
 
 .l-investimento__number {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: clamp(3.5rem, 7vw, 8rem);
   font-weight: 300;
   color: var(--gold);
@@ -794,7 +897,7 @@
 
 .tipo-card__body {
   padding: 2rem 2rem 1.5rem;
-  background: linear-gradient(to top, rgba(13, 14, 22, 0.98) 0%, rgba(13, 14, 22, 0.85) 100%);
+  background: linear-gradient(to top, rgba(18, 34, 43, 0.98) 0%, rgba(18, 34, 43, 0.85) 100%);
   position: absolute;
   bottom: 0;
   left: 0;
@@ -817,7 +920,7 @@
 }
 
 .tipo-card__title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: 1.7rem;
   font-weight: 400;
   color: var(--cream);
@@ -837,7 +940,6 @@
   grid-template-columns: 1fr 1fr;
   gap: 8rem;
   align-items: center;
-  background: var(--bg-medium);
 }
 
 .l-exclusividade__img {
@@ -888,10 +990,9 @@
   font-weight: 600;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--cream);
-  background: rgba(13, 14, 22, 0.55);
+  color: #ffffff;
+  background: rgba(18, 34, 43, 0.72);
   padding: 0.35rem 0.8rem;
-  backdrop-filter: blur(6px);
   border-radius: 2px;
 }
 
@@ -930,7 +1031,7 @@
 }
 
 .excl-stat__number {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: 3rem;
   font-weight: 300;
   color: var(--gold);
@@ -951,7 +1052,6 @@
 /* ─── CTA + Form ─────────────────────────────────────────────── */
 .l-cta {
   padding: 12rem 5vw;
-  background: var(--bg-dark);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8rem;
@@ -963,7 +1063,7 @@
 }
 
 .l-cta__quote {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: clamp(1.3rem, 2vw, 2rem);
   font-style: italic;
   font-weight: 300;
@@ -976,13 +1076,18 @@
 
 /* ─── Lead Form ──────────────────────────────────────────────── */
 .l-form {
-  background: rgba(17, 19, 29, 0.9);
-  border: 1px solid rgba(196, 160, 90, 0.2);
+  /* Painel no dourado do logo — a terceira cor da marca, que até aqui só
+     aparecia em detalhe. Sobre a banda verde-água da seção, ele é o ponto
+     quente da página, que é o papel do formulário. Sólido, não vidro: sobre
+     fundo claro o desfoque não dava profundidade, só custo de composição. */
+  background: linear-gradient(165deg, #f7eeda 0%, #eee0c2 100%);
+  border: 1px solid rgba(176, 133, 70, 0.4);
+  box-shadow: 0 18px 44px rgba(18, 34, 43, 0.09);
   padding: 3rem;
 }
 
 .l-form__title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: 2rem;
   font-weight: 400;
   color: var(--cream);
@@ -1013,9 +1118,14 @@
 .l-form__input,
 .l-form__select {
   width: 100%;
-  background: rgba(13, 14, 22, 0.9);
-  border: 1px solid rgba(196, 160, 90, 0.18);
-  color: var(--cream);
+  /* O campo é definido por borda e profundidade, não por tom: painel e campo
+     vivem na mesma família clara, e nenhum preenchimento testado separou mais
+     que 1.2 de contraste. A sombra interna faz o campo ler como rebaixado no
+     painel, que é o que a diferença de cor não conseguiria dar. */
+  background: #fffdf7;
+  border: 1px solid rgba(138, 95, 34, 0.42);
+  box-shadow: inset 0 1px 3px rgba(138, 95, 34, 0.13);
+  color: var(--ink);
   padding: 0.9rem 1rem;
   font-family: 'Montserrat', sans-serif;
   font-size: 0.78rem;
@@ -1029,16 +1139,18 @@
 
 .l-form__input:focus,
 .l-form__select:focus {
+  background: #ffffff;
+  box-shadow: inset 0 1px 2px rgba(138, 95, 34, 0.08), 0 0 0 3px rgba(138, 95, 34, 0.18);
   border-color: var(--gold);
 }
 
 .l-form__input::placeholder {
-  color: var(--muted);
+  color: #8d7d60;
 }
 
 .l-form__select option {
-  background: #0d0e16;
-  color: var(--cream);
+  background: #fffdf8;
+  color: var(--ink);
 }
 
 .l-form__select-arrow {
@@ -1099,7 +1211,7 @@
 }
 
 .l-footer__logo {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Quicksand', sans-serif;
   font-size: 1.3rem;
   font-weight: 400;
   letter-spacing: 0.12em;
@@ -1174,3 +1286,110 @@
 
 
 }
+
+
+/* ─── Hero no mobile ──────────────────────────────────────────
+   Precisa vir depois das regras de desktop: o bloco mobile do topo do arquivo
+   é anterior a elas, e com a mesma especificidade quem vem por último vence.
+   Sem maquete aqui — a composição lado a lado não cabe numa tela estreita, e
+   assim o celular também não baixa a sequência de frames. */
+@media (max-width: 768px) {
+  .hero-stage { display: none; }
+
+  .l-hero__content {
+    width: 100%;
+    margin: 0;
+    text-align: center;
+  }
+
+  .l-hero__actions {
+    justify-content: center;
+  }
+}
+
+
+/* ─── Onda entre a hero e a seção seguinte ────────────────────
+   SVG estático encostado na base da hero. Não anima e não usa JS: a hero já
+   repinta um canvas a cada passo do scroll, e uma onda animada disputaria o
+   mesmo frame. As três faixas coloridas são as ondas do logo, em opacidade
+   baixa, e a branca por cima é o começo da próxima seção. */
+.l-hero__wave {
+  position: absolute;
+  bottom: -1px;            /* -1px evita a fresta de subpixel no zoom */
+  left: 0;
+  width: 100%;
+  /* Mais alta que antes: com preserveAspectRatio="none" a onda é esticada, e
+     pouca altura deixava as curvas íngremes — era daí que vinha o aspecto de
+     degrau em telas estreitas. */
+  height: clamp(110px, 14vw, 200px);
+  display: block;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Opacidades baixas e todas na família da água: as três faixas anteriores
+   somavam um cinza pesado no rodapé da hero, e o verde escuro era o que mais
+   sujava. Agora é espuma sobre espuma. */
+.l-hero__wave-tint--green { fill: #7fc9a8; opacity: 0.20; }
+.l-hero__wave-tint--gold  { fill: #ffffff; opacity: 0.34; }
+.l-hero__wave-tint--blue  { fill: #7ecbe4; opacity: 0.26; }
+
+.l-hero__wave-fill {
+  fill: var(--bg-dark);    /* a superfície da seção seguinte */
+}
+
+@media (max-width: 768px) {
+  .l-hero__wave {
+    height: 88px;
+  }
+}
+
+
+
+
+/* ─── Fundo da página ─────────────────────────────────────────
+   Um gradiente só, do topo ao rodapé, no contêiner da landing. As seções são
+   transparentes: antes cada uma pintava a própria tinta e desvanecia para
+   transparente nas bordas, e duas vizinhas encostavam suas pontas quase
+   brancas — o encontro virava a faixa clara atravessando a tela.
+
+   O gradiente tem PLATÔS, não uma rampa contínua. A rampa deixava a página
+   inteira no mesmo valor médio: nenhuma seção se distinguia, as fotos ficavam
+   sobre um lençol dessaturado e o conjunto lia como sujeira. Aqui cada seção
+   tem uma cor que se mantém no seu trecho, e a passagem entre trechos ocupa
+   uns poucos por cento — suave o bastante para não desenhar linha, curta o
+   bastante para as cores existirem.
+
+   As paradas seguem as posições medidas das seções:
+   conceito 24–34 · experiência 34–63 · investimento 63–76
+   exclusividade 76–87 · contato 87–98 · rodapé 98–100 */
+.landing {
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #ffffff 22%,      /* conceito: branco, dá respiro depois da hero */
+    #f7fbfa 26%,
+    #d9ebe6 33%,      /* passagem */
+    #cfe7e4 36%,      /* experiência: banda de água */
+    #cfe7e4 58%,
+    #f4faf8 62%,      /* passagem */
+    #ffffff 66%,      /* investimento: branco, faz a foto saltar */
+    #ffffff 73%,
+    #e3f0e8 77%,      /* passagem */
+    #cfe3d6 80%,      /* exclusividade: banda verde */
+    #cfe3d6 85%,
+    #b9d8d4 89%,      /* passagem */
+    #a6cdc9 92%,      /* contato: mais fundo, isola o formulário */
+    #a6cdc9 97%,
+    #7fb0ad 99%,      /* rodapé */
+    #6f9f9d 100%
+  );
+}
+
+.landing > section,
+.landing > footer {
+  background-color: transparent;
+  background-image: none;
+  border-bottom: none;
+}
+

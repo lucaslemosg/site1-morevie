@@ -1,0 +1,39 @@
+Isometric 3D architectural miniature time-lapse. Locked static camera, true isometric perspective, elevated 45-degree overhead angle looking down at a floating tabletop diorama. The shot continues exactly from the provided starting image and keeps its exact framing, base position, lighting and background for the entire shot.
+
+BACKGROUND: stays the same completely flat, uniform, solid BRIGHT CYAN #4fc3d9 for the whole shot. No gradient, no texture, no vignette, no sky, no environment. Nothing in the model may be this cyan colour.
+
+LIGHTING: bright, soft, even, high-key daylight throughout. Soft gentle shadows on the plinth only. No deep blacks, no heavy dark shadow pooling around or under the model, no dark halo in the air around the building.
+
+THE SHOT BEGINS ON BARE GROUND. The first moments show only the empty floating plot from the starting image: bare dirt, patches of scrub grass, the paved street strip. Nothing is built yet.
+
+HOW THE BUILDING MUST BE BUILT — this is the most important part. The building is assembled the way a real structure goes up, never as finished blocks dropping into place. Each storey is built in visible stages, in this order, and the next storey only starts once the one below is structurally there:
+
+1. Concrete columns extrude upward out of the floor below, thin and bare.
+2. Beams span between the column tops.
+3. The floor slab spreads outward across the beams, growing from the middle to the edges.
+4. Interior partition walls rise on the slab, and you can see into the open floor: rooms taking shape, interior walls, stairs, the lift core.
+5. Only then do the outer facade panels, glass, railings and balcony fronts fill in and close that floor.
+
+The result is that at any moment you can see the building in cross-section: finished floors below, an open skeleton floor being worked on, and bare columns above. Never a floor that appears already complete. Never a whole storey popping in at once.
+
+THE ROOFTOP MUST BE BUILT THE SAME WAY. Do not let the top of the building appear as a finished box. The rooftop penthouse goes up exactly like the floors below it: columns, then beams, then its slab, then its interior walls and rooms visible from above, then the long band of dark-framed glazing, the warm wood soffit and the flat roof closing it last. Its internal structure must be visible while it is being built, just like the lower floors.
+
+THE BUILDING: a single mid-rise residential building of six to seven floors. A tall vertical column of warm natural wood slat cladding runs up the centre of the main facade, flanked by crisp white horizontal floor slabs. Recessed balconies with clear glass railings and slim dark metal frames. Tall windows with thin dark mullions.
+
+PACING: one constant, even, unhurried speed from the very first frame to the very last, filling the entire duration. Nothing snaps, pops or jumps. Every element visibly travels into place over many frames. The building should still be under construction right up to the final second, with only the last touches of landscaping completing.
+
+LANDSCAPING grows in gradually alongside: palm trees and small trees sprout and unfold, hedges and garden beds fill out, paved walkways and the entrance appear.
+
+CRITICAL: absolutely NO CARS and NO VEHICLES at any point. No parked cars, no cars on the street, no trucks, no construction vehicles, no cranes. Nothing with wheels anywhere in the shot.
+
+COMPOSITION IS CRITICAL: the floating plot stays exactly where it sits in the starting image — small, low and to the left — and never moves or changes size.
+
+THE FINISHED BUILDING MUST FIT INSIDE THE FRAME WITH ROOM TO SPARE. As it grows upward it must stop well short of the top edge: when complete, there is still a clear band of empty background above the roof, roughly a fifth of the frame height. Never let any part of the building, the rooftop or the trees touch or cross the top edge of the frame. The whole model stays fully visible at all times.
+
+The entire RIGHT half of the frame stays completely empty background for the whole shot.
+
+CAMERA: absolutely locked and static. No orbit, no dolly, no pan, no zoom, no parallax, no shake. The isometric angle is identical in every single frame.
+
+STYLE: crisp premium 3D product visualization of an architectural scale model, sharp clean edges, high detail miniature textures, physically accurate materials — warm natural wood, clean white concrete, clear glass, thin dark metal frames.
+
+Single continuous take, no cuts, no text, no logos, no watermarks, no people.

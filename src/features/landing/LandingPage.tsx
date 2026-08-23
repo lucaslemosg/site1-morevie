@@ -1,9 +1,27 @@
 import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { HERO_FRAME_COUNT, containRect, frameIndexFromProgress, framePath, scaleRect, shiftRect, shouldRenderModel } from '../../lib/frameScrub';
+import { shouldNavBeSolid } from '../../lib/navSolid';
 import './landing.css';
 
 gsap.registerPlugin(ScrollTrigger);
+
+/* Quanto o frame desenhado desliza para a direita, em fração da largura.
+   O vídeo põe a maquete em 3%–53% do quadro; deslocar 44% a leva para
+   47%–97%, liberando a metade esquerda para a marca e os CTAs. */
+/* Centraliza a maquete no espaço que sobra à direita do texto. O texto termina
+   em ~45% da largura, então o centro dessa faixa livre fica em ~72%; com 0.46
+   a maquete ia parar em 78% e encostava na borda direita. */
+const HERO_SHIFT = 0.395;
+
+/* Reduz a maquete para ela não subir até a faixa do header, onde passaria por
+   trás do botão de CTA. */
+const HERO_SCALE = 0.82;
+
+/* Desce a maquete um pouco, liberando a altura do header por completo. */
+const HERO_DROP = 0.05;
+
 
 /* Endpoint público do bff: resolve o operador da vez, insere o lead na planilha
    (sheet=google) e responde 302 pro WhatsApp. */
@@ -23,6 +41,11 @@ const buildWhatsappMessage = (nome: string, entrada: string) =>
 
 export function LandingPage() {
   const rootRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLCanvasElement>(null);
+  const framesRef = useRef<HTMLImageElement[]>([]);
+  const paintedRef = useRef(-1);
+  const repaintRef = useRef<(() => void) | null>(null);
+  const progressRef = useRef(0);
   const [navScrolled, setNavScrolled] = useState(false);
   const [formState, setFormState] = useState<'idle' | 'sending' | 'sent'>('idle');
   const [formFilled, setFormFilled] = useState(false);
@@ -41,26 +64,117 @@ export function LandingPage() {
     return { zIndex: 1, transform: 'translateX(-5%) translateY(-4%) rotate(-3deg) scale(0.87)', opacity: 0.7 };
   };
 
+  /* ── Frames da maquete ───────────────────────────────────
+     Pré-carrega a sequência para o scrub trocar de frame sem ir à rede.
+     Sem isso o primeiro passe pela hero fica emperrado, porque cada frame
+     só aparece depois de baixar. */
+  useLayoutEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    /* No celular a maquete não é desenhada, então os 3,8 MB de frames não
+       chegam a sair da rede. */
+    if (!shouldRenderModel(window.innerWidth, reduced)) return;
+    let cancelled = false;
+    framesRef.current = [];
+    for (let i = 0; i < HERO_FRAME_COUNT; i++) {
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = framePath(i);
+      img.onload = () => {
+        if (cancelled) return;
+        framesRef.current[i] = img;
+        /* Repinta a cada chegada: o canvas pode estar mostrando um vizinho
+           escolhido como substituto enquanto este ainda vinha da rede. */
+        repaintRef.current?.();
+      };
+    }
+    return () => { cancelled = true; };
+  }, []);
+
   /* ── Nav scroll state ────────────────────────────────────── */
   useLayoutEffect(() => {
-    const onScroll = () => setNavScrolled(window.scrollY > 60);
+    /* A hero fica pinada por 150% da tela enquanto a maquete se constrói.
+       O limiar tem de ser o fim desse trecho, não os 60px de sempre: a barra
+       sólida do nav é mais escura que a hero e risca uma faixa por cima dela. */
+    const heroEnd = () => {
+      const hero = document.querySelector('.l-hero');
+      if (!hero || window.innerWidth <= 768) return null;
+      return window.innerHeight * 1.5;
+    };
+    const onScroll = () => setNavScrolled(shouldNavBeSolid(window.scrollY, heroEnd()));
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
   }, []);
 
   /* ── GSAP Animations ─────────────────────────────────────── */
   useLayoutEffect(() => {
+    /* Desenha o frame num canvas em vez de trocar o src de uma <img>:
+       reatribuir src limpa o quadro antes de pintar o novo, e a cada passo do
+       scrub isso aparece como piscada. drawImage escreve por cima, sem apagar. */
+    const paintFrame = (progress: number, force = false) => {
+      const canvas = stageRef.current;
+      if (!canvas) return;
+      if (!shouldRenderModel(window.innerWidth, false)) return;
+      progressRef.current = progress;
+      const index = frameIndexFromProgress(progress, HERO_FRAME_COUNT);
+      if (index === paintedRef.current && !force) return;
+
+      /* Enquanto a sequência carrega, cai no frame decodificado mais próximo:
+         sem isso a hero fica vazia no primeiro passe. */
+      let img = framesRef.current[index];
+      if (!img) {
+        for (let d = 1; d < HERO_FRAME_COUNT; d++) {
+          img = framesRef.current[index - d] ?? framesRef.current[index + d];
+          if (img) break;
+        }
+      }
+      if (!img) return;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+      }
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      /* Os frames vêm com alfa (scripts/keyout-bg.py), então o canvas só
+         limpa: quem pinta o fundo é o CSS da hero. Foi isso que soltou a hero
+         da cor do vídeo e permitiu o fundo claro. */
+      ctx.clearRect(0, 0, w, h);
+
+      const fit = scaleRect(containRect(img.naturalWidth, img.naturalHeight, w, h), HERO_SCALE);
+      const box = shiftRect(fit, w, HERO_SHIFT);
+      ctx.drawImage(img, box.x, box.y + h * HERO_DROP, box.width, box.height);
+      paintedRef.current = index;
+    };
+
+    /* O preload e o resize precisam repintar o frame corrente. */
+    repaintRef.current = () => paintFrame(progressRef.current, true);
+    const onResize = () => paintFrame(progressRef.current, true);
+    window.addEventListener('resize', onResize);
+    paintFrame(0, true);
+
     const ctx = gsap.context(() => {
       const isMobile = window.innerWidth <= 768;
 
-      /* Hero: tudo escondido inicialmente */
-      gsap.set('.l-hero__brand',      { opacity: 0, y: 24 });
-      gsap.set('.l-hero__subtitle',   { opacity: 0, y: 20 });
-      gsap.set('.l-hero__actions',    { opacity: 0, y: 20 });
+      /* Marca, tagline e botões ficam visíveis desde o primeiro paint: quem
+         chega precisa ver quem é e o que fazer sem depender de rolar. Só a
+         maquete se constrói com o scroll. */
+      gsap.set('.l-hero__brand',      { opacity: 1, y: 0 });
+      gsap.set('.l-hero__subtitle',   { opacity: 1, y: 0 });
+      gsap.set('.l-hero__actions',    { opacity: 1, y: 0 });
       gsap.set('.l-hero__scroll',     { opacity: 0 });
 
       if (isMobile) {
-        /* Mobile: nada a fazer aqui — scroll listener fora do context */
+        /* Mobile: a hero é só a marca e os botões, sem maquete para animar. */
 
         /* Experiência: sem pin no mobile */
         gsap.set('.exp-slide-2', { clipPath: 'inset(0% 0% 0% 0%)' });
@@ -75,14 +189,14 @@ export function LandingPage() {
             pin: true,
             scrub: 1,
             anticipatePin: 1,
+            /* As etapas são pintadas direto do progresso, e não por tweens
+               encadeados: a mistura precisa somar 1 em qualquer ponto, senão
+               a hero escurece no meio de cada transição. */
+            onUpdate: ({ progress }) => paintFrame(progress),
           },
         });
 
-        heroTl
-          .to('.l-hero__brand',      { opacity: 1, y: 0, duration: 0.6 })
-          .to('.l-hero__subtitle',   { opacity: 1, y: 0, duration: 0.4 }, '-=0.1')
-          .to('.l-hero__actions',    { opacity: 1, y: 0, duration: 0.4 }, '-=0.1')
-          .to('.l-hero__scroll',     { opacity: 1, duration: 0.3 });
+        heroTl.to('.l-hero__scroll', { opacity: 1, duration: 0.3 });
 
         /* Experiência: efeito de janela — desktop apenas */
         gsap.set('.exp-slide-2', { clipPath: 'inset(100% 0% 0% 0%)' });
@@ -152,31 +266,12 @@ export function LandingPage() {
       });
     }, rootRef);
 
-    /* Mobile: scroll listener fora do gsap.context para cleanup correto */
-    let mobileCleanup: (() => void) | null = null;
-    if (window.innerWidth <= 768) {
-      const revealed = { brand: false, subtitle: false, actions: false };
-      const onHeroScroll = () => {
-        const y = window.scrollY;
-        if (!revealed.brand && y >= 60) {
-          revealed.brand = true;
-          gsap.to('.l-hero__brand', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' });
-        }
-        if (!revealed.subtitle && y >= 160) {
-          revealed.subtitle = true;
-          gsap.to('.l-hero__subtitle', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' });
-        }
-        if (!revealed.actions && y >= 280) {
-          revealed.actions = true;
-          gsap.to('.l-hero__actions', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' });
-          window.removeEventListener('scroll', onHeroScroll);
-        }
-      };
-      window.addEventListener('scroll', onHeroScroll, { passive: true });
-      mobileCleanup = () => window.removeEventListener('scroll', onHeroScroll);
-    }
 
-    return () => { ctx.revert(); mobileCleanup?.(); };
+    return () => {
+      ctx.revert();
+      window.removeEventListener('resize', onResize);
+      repaintRef.current = null;
+    };
   }, []);
 
   /* ── Form submit ─────────────────────────────────────────── */
@@ -236,7 +331,7 @@ export function LandingPage() {
       {/* ── Navigation ──────────────────────────────────────── */}
       <nav className={`l-nav ${navScrolled ? 'is-scrolled' : ''}`}>
         <a href="#hero" className="l-nav__logo">
-          <img src="/logo.png" alt="Morê Nature Spa" className="l-nav__logo-img" />
+          <img src="/logo-nav.png" alt="Morê Nature Spa" className="l-nav__logo-img" />
         </a>
         <div className="l-nav__actions">
           <a href="#contato" className="l-nav__cta">
@@ -255,7 +350,12 @@ export function LandingPage() {
       {/* ── Hero ────────────────────────────────────────────── */}
       <section className="l-hero" id="hero">
         <div className="l-hero__bg">
-          <img className="hero-stage" src="/etapa4.png" alt="Morê Nature Spa" />
+          <canvas
+            ref={stageRef}
+            className="hero-stage"
+            role="img"
+            aria-label="Maquete do Morê Nature Spa sendo construída, da fundação ao empreendimento pronto"
+          />
         </div>
         <div className="l-hero__overlay" />
 
@@ -274,6 +374,52 @@ export function LandingPage() {
           <div className="l-hero__scroll-line" />
           <span>Scroll</span>
         </div>
+
+        {/* Onda de saída da hero. SVG estático: sem JS, sem animação por frame
+            e sem custo de runtime — a hero já paga um canvas por scroll.
+            Preenchimento em gradiente, não cor chapada: faixas sólidas
+            empilhadas liam como degraus em vez de água. */}
+        <svg
+          className="l-hero__wave"
+          viewBox="0 0 1440 200"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <defs>
+            <linearGradient id="ondaA" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#8ad2e8" stopOpacity="0" />
+              <stop offset="100%" stopColor="#8ad2e8" stopOpacity="0.5" />
+            </linearGradient>
+            <linearGradient id="ondaB" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#86cfae" stopOpacity="0" />
+              <stop offset="100%" stopColor="#86cfae" stopOpacity="0.42" />
+            </linearGradient>
+            <linearGradient id="ondaC" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#ffffff" stopOpacity="0.85" />
+            </linearGradient>
+          </defs>
+
+          {/* Amplitudes e comprimentos diferentes em cada camada: cristas
+              alinhadas é o que fazia o conjunto parecer um degrau só. */}
+          <path
+            fill="url(#ondaA)"
+            d="M0,96 C160,52 300,44 470,74 C650,106 780,138 960,128 C1120,119 1290,84 1440,58 L1440,200 L0,200 Z"
+          />
+          <path
+            fill="url(#ondaB)"
+            d="M0,124 C200,92 340,124 520,142 C700,160 840,140 1010,124 C1180,108 1320,116 1440,132 L1440,200 L0,200 Z"
+          />
+          <path
+            fill="url(#ondaC)"
+            d="M0,150 C180,132 300,164 500,170 C690,176 820,150 1000,148 C1190,146 1330,164 1440,158 L1440,200 L0,200 Z"
+          />
+          <path
+            className="l-hero__wave-fill"
+            d="M0,176 C220,164 380,190 580,192 C780,194 900,172 1080,170 C1250,168 1360,184 1440,180 L1440,200 L0,200 Z"
+          />
+        </svg>
       </section>
 
       {/* ── Conceito ────────────────────────────────────────── */}
